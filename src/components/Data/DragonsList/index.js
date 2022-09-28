@@ -1,4 +1,4 @@
-import { userActions } from '../../../data/store'
+import { userActions, totalActions, offsetActions } from '../../../data/store'
 import { setFavorites, getUser } from '../../../data/firebase'
 import Image from '../../UI/Image'
 import Favorite from '../../UI/Favorite'
@@ -23,9 +23,9 @@ export default function DragonsList() {
 		dispatch = useDispatch(),
 		dragons = useSelector(state => state.dragons.list),
 		user = useSelector(state => state.user.user),
+		total = useSelector(state => state.total.value),
+		offset = useSelector(state => state.offset.value),
 		[isLoading, setIsLoading] = useState(true),
-		[total, setTotal] = useState(0),
-		[offset, setOffset] = useState(0),
 		favorites = user && user.favorites || [],
 		handleChangeIsFavorite = (id, isFavorite) => {
 			if (isFavorite) {
@@ -65,14 +65,13 @@ export default function DragonsList() {
 
 				</article >
 		),
-		scrollHandler = e => {
-			const totalHeight = e.target.documentElement.scrollHeight,
-				scrolled = e.target.documentElement.scrollTop,
+		scrollHandler = () => {
+			const totalHeight = document.documentElement.scrollHeight,
+				scrolled = document.documentElement.scrollTop,
 				windowHeight = window.innerHeight
+			//console.log('scroll', scrolled + windowHeight, totalHeight - 50, offsetRef.current, totalRef.current)
 			if (scrolled + windowHeight >= totalHeight - 50 && offsetRef.current < totalRef.current)
 				setIsLoading(true)
-
-
 		}
 
 	useEffect(
@@ -97,14 +96,16 @@ export default function DragonsList() {
 					}
 				}
 			)
-			.then(result => setTotal(result.data.totalDocs))
+			.then(result => {
+				totalRef.current = result.data.totalDocs
+				dispatch(totalActions.set(result.data.totalDocs))
+			})
 			.catch(e => toast.error(e.message))
 	},
 		[]
 	)
 	useEffect(() => {
-		if (isLoading) {
-			console.log('request', offset)
+		if (isLoading && (offset < total || total === 0))
 			axios
 				.post(
 					'https://api.spacexdata.com/v4/dragons/query',
@@ -116,43 +117,20 @@ export default function DragonsList() {
 						}
 					}
 				)
-			.then(result => {
-				const { id, name, flickr_images: imgUrls, description, wikipedia: wikiUrl, launch_payload_mass: { kg: mass }, height_w_trunk: { meters: height }, first_flight: year } = result.data.docs[0],
-					dragon = { id, name, imgUrls, description, wikiUrl, mass, height, year }
-				setOffset(offset + 1)
-				dispatch(dragonActions.add(dragon))
+				.then(result => {
+					const { id, name, flickr_images: imgUrls, description, wikipedia: wikiUrl, launch_payload_mass: { kg: mass }, height_w_trunk: { meters: height }, first_flight: year } = result.data.docs[0],
+						dragon = { id, name, imgUrls, description, wikiUrl, mass, height, year }
+					dispatch(offsetActions.set(offset + 1))
+					dispatch(dragonActions.add(dragon))
 
-			})
-			.catch(e => toast.error(e.message))
-			.finally(() => setIsLoading(false))
-		}
+				})
+				.catch(e => toast.error(e.message))
+				.finally(() => setIsLoading(false))
 	},
 		[isLoading]
 	)
 
-	//useEffect(
-	//	() => {
 
-	//		axios
-	//			.get('https://api.spacexdata.com/v4/dragons')
-	//			.then(res => {
-	//				const dragons = res.data.map(
-	//					(
-	//						{ id, name, flickr_images: imgUrls, description, wikipedia: wikiUrl, launch_payload_mass: { kg: mass }, height_w_trunk: { meters: height }, first_flight: year }
-	//					) => (
-	//						{
-	//							id, name, imgUrls, description, wikiUrl, mass, height, year
-	//						}
-	//					)
-	//				)
-	//				const id = getCookie('user')
-	//				if (id)
-	//					getUser(id)
-	//						.then(userData => dispatch(userActions.login(userData)))
-	//						.catch(e => toast.error(e.message))
-	//				dispatch(dragonActions.set(dragons))
-	//			})
-	//	}, [])
 	totalRef.current = total
 	offsetRef.current = offset
 	return (<>
