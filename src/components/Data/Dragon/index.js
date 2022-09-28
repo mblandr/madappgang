@@ -47,7 +47,6 @@ export default function Dragon() {
 		load = async () => {
 			try {
 				const data = await loadDragon(id)
-				console.log('loaded data', data)
 				dispatch(dragonActions.update({
 					id, data
 				}))

@@ -6,7 +6,8 @@ import Profile from './components/User/Profile'
 import Login from './components/User/LoginRegister'
 import Logout from './components/User/Logout'
 import Home from './components/UI/Home'
-
+import { getCookie } from './data/cookie'
+import { getUser } from './data/firebase'
 
 
 
@@ -19,9 +20,19 @@ import axios from 'axios'
 import './App.sass'
 
 
-export default function App() {	
-	const user = useSelector(state => state.user.user)
-	
+export default function App() {
+	const user = useSelector(state => state.user.user),
+		dispatch = useDispatch()
+	useEffect(
+		() => {
+			const id = getCookie('user')
+			if (id)
+				getUser(id)
+					.then(userData => dispatch(userActions.login(userData)))
+					.catch(e => toast.error(e.message))
+		}, [])
+
+
 	return <div className='cnt'>
 		<Toaster />
 		<Router>

@@ -8,6 +8,9 @@ const dragonsSlice = createSlice({
 		set(state, action) {
 			state.list = action.payload
 		},
+		add(state, action) {
+			state.list.push(action.payload)
+		},
 		update(state, action) {
 
 			const index = state.list.findIndex(
