@@ -1,11 +1,16 @@
 import { userActions } from '../../../data/store'
-import { setFavorites } from '../../../data/firebase'
+import { setFavorites, getUser } from '../../../data/firebase'
 import Image from '../../UI/Image'
 import Favorite from '../../UI/Favorite'
 
+import { getCookie } from '../../../data/cookie'
+
 import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { dragonActions } from '../../../data/store'
 import { Link } from 'react-router-dom'
+import axios from 'axios'
+import { toast} from 'react-hot-toast'
 
 import style from './index.module.sass'
 
@@ -73,6 +78,30 @@ export default function DragonsList() {
 		document.addEventListener('scroll', scrollHandler)
 		return () => document.removeEventListener('scroll', scrollHandler)
 	}, [])
+
+	useEffect(
+		() => {
+
+			axios
+				.get('https://api.spacexdata.com/v4/dragons')
+				.then(res => {
+					const dragons = res.data.map(
+						(
+							{ id, name, flickr_images: imgUrls, description, wikipedia: wikiUrl, launch_payload_mass: { kg: mass }, height_w_trunk: { meters: height }, first_flight: year }
+						) => (
+							{
+								id, name, imgUrls, description, wikiUrl, mass, height, year
+							}
+						)
+					)
+					const id = getCookie('user')
+					if (id)
+						getUser(id)
+							.then(userData => dispatch(userActions.login(userData)))
+							.catch(e => toast.error(e.message))
+					dispatch(dragonActions.set(dragons))
+				})
+		}, [])
 
 	return (<>
 		<h1 className={style.title}>Список Dragons</h1>
