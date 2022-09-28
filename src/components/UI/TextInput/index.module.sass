@@ -1,0 +1,38 @@
+@mixin float
+	top: 0em
+	left: 0
+	font-size: 0.8em
+
+
+
+.input-div
+	padding: 1em 0
+	position: relative
+
+	label
+		position: absolute
+		top: 2em
+		left: 1em
+		font-weight: 300
+		pointer-events: none
+		transition: all .5s
+		&.float
+			@include float
+
+	input, textarea
+		border: 2px solid transparent
+		padding: 1em
+		width: 100%
+		background-color: lightgray
+		outline: none
+
+	&:focus-within
+		label
+			@include float
+	.invalid
+		border: 2px solid red	
+
+	.required
+		color: red
+		font-weight: 700
+		margin-left: 0.1em

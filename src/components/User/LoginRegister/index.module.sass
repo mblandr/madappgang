@@ -1,0 +1,40 @@
+.form
+	width: 50%
+	min-width: 14em
+	margin-left: auto
+	margin-right: auto
+.checkbox
+	margin: 1em 0.5em 1em 0
+
+.button, .button-alt
+	min-width: 11em
+	padding: 0.5em 2em
+	border-radius: 0.5em
+	background-color: #191e81
+	cursor: pointer
+	color: white
+	border: none
+	@media screen and (max-width: 900px)		
+		width: 100%
+
+.button-alt
+	background-color: lightgray
+	display: inline-flex
+	align-items: center
+	justify-content: center
+	color: black	
+	.icon
+		margin-right: 1em
+
+.btns
+	display: flex
+	align-items: center
+	justify-content: center
+	flex-wrap: wrap
+	
+
+	button + button
+		margin-left: 2em
+		@media screen and (max-width: 900px)
+			margin-left: 0
+			margin-top: 0.5em

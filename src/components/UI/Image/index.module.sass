@@ -1,0 +1,107 @@
+.wrapper
+	display: flex
+	justify-content: center
+	align-items: center
+
+.img
+	object-fit: cover
+	cursor: pointer
+
+/* #region loader */
+.ring
+	position: relative
+	width: 80px
+	height: 80px
+
+	div
+		box-sizing: border-box
+		display: block
+		position: absolute
+		width: 64px
+		height: 64px
+		margin: 8px
+		border: 8px solid
+		border-radius: 50%
+		animation: ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite
+		border-color: blue transparent transparent transparent
+
+	div:nth-child(1)
+		animation-delay: -0.45s
+
+	div:nth-child(2)
+		animation-delay: -0.3s
+
+	div:nth-child(3)
+		animation-delay: -0.15s
+
+@keyframes ring
+	0%
+		transform: rotate(0deg)
+
+	100%
+		transform: rotate(360deg)
+
+/* #endregion# loader */
+
+/* #region fullscreeen preview */
+
+.full
+	position: fixed
+	z-index: 1
+	left: 0
+	top: 0
+	right: 0
+	bottom: 0
+	background-color: rgba(0,0,0, 5)
+	display: flex
+	justify-content: center
+	align-items: center
+	opacity: 0
+	//perspective: 500px
+	animation: showFull 0.5s both
+	img
+		width: auto
+		height: auto
+		max-width: 100%
+		max-height: 100%
+		animation: showFullImg .5s 0.5s both
+		transform-origin: center
+
+.hide
+	color: red
+	animation: hideFull .5s .5s both
+	img		
+		animation: hideFullImg .5s both
+
+@keyframes showFull
+	0%
+		opacity: 0
+
+	100%
+		opacity: 1
+
+@keyframes hideFull
+	0%
+		opacity: 1
+
+	100%
+		opacity: 0
+
+@keyframes showFullImg
+	0%
+		transform: scale(0) rotateX(0)
+		opacity: 0
+
+	100%
+		transform: scale(1) rotateX(1turn)
+		opacity: 1
+
+@keyframes hideFullImg
+	0%
+		transform: scale(1) rotateX(1turn)
+		opacity: 1
+	100%
+		transform: scale(0) rotateX(0)
+		opacity: 0
+
+/* #endregion# fullscreeen preview */
