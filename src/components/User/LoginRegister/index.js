@@ -180,14 +180,14 @@ export default function LoginRegister() {
 
 						<button
 							className={style.button}
-							//id='signUp'
+							id='signUp'
 						>
 							Регистрация
 						</button>
 						:
 						<>
 							<button
-								//id='signIn'
+								id='signIn'
 								className={style.button}
 							>
 								Вход
