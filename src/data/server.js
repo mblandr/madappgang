@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-export const getDragons = () =>
+export const getDragonsFromServer = () =>
 	axios
 		.post(
 			'https://api.spacexdata.com/v4/dragons/query',
@@ -12,7 +12,7 @@ export const getDragons = () =>
 		)
 		.then(result => result.data.docs.map(({ id }) => id))
 
-export const getDragon = id =>
+export const getDragonFromServer = id =>
 	axios
 		.post(
 			'https://api.spacexdata.com/v4/dragons/query',

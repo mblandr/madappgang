@@ -1,5 +1,5 @@
 export const saveDragon = ({ id, imgUrls, ...otherFields }) => {
-	const canvas = document.createElement('canvas');	
+	const canvas = document.createElement('canvas');
 	const imgPromises = imgUrls.map(
 		image => new Promise(
 			(resolve, reject) => {
@@ -29,14 +29,16 @@ export const saveDragon = ({ id, imgUrls, ...otherFields }) => {
 			}
 		)
 	)
-	Promise
+	return Promise
 		.allSettled(imgPromises)
 		.then(
 			results => {
 				const imgUrls = results.map(
 					result => result.status === 'fulfilled' ? result.value : ''
 				)
-				localStorage.setItem(id, JSON.stringify({ imgUrls, ...otherFields }))
+				const data = JSON.stringify({ imgUrls, ...otherFields })
+				localStorage.setItem(id, data)
+				return data
 			}
 		)
 }
@@ -46,6 +48,10 @@ export const loadDragon = id => {
 	const data = localStorage.getItem(id)
 	if (!data)
 		return false
-	return JSON.parse(data)
+
+	const result = JSON.parse(data)
+	result.id = id
+	return result
+
 
 }

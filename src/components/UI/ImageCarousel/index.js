@@ -26,11 +26,11 @@ export default function ImageCarousel({ className = '', items = [], ...props }) 
 			moveNext()
 
 		}
-
 	if (items.length === 0)
-		return
+		return <p>No items in carousel</p>
 
-	const { src, alt } = items[index]
+
+	const { src, alt } = items[index]	
 	return (
 		<div className={`${style.carousel} ${className}`.trim()}>
 			<div className={style['carousel-inner']}>

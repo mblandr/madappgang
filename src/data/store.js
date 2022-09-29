@@ -1,8 +1,8 @@
 import { createSlice, configureStore } from '@reduxjs/toolkit'
 import { ActionCodeOperation, updateCurrentUser } from 'firebase/auth'
 
-const dragonsSlice = createSlice({
-	name: 'dragons',
+const dragonsCacheSlice = createSlice({
+	name: 'dragons cached in memory',
 	initialState: { list: [] },
 	reducers: {
 		set(state, action) {
@@ -29,26 +29,15 @@ const dragonsSlice = createSlice({
 	}
 })
 
+
 const idsSlice = createSlice({
-	name: 'ids of items on server',
+	name: 'ids of dragons on server',
 	initialState: {
-		list: [] 
+		list: []
 	},
 	reducers: {
 		set(state, action) {
 			state.list = action.payload
-		}
-	}
-})
-
-const offsetSlice = createSlice({
-	name: 'offset on server',
-	initialState: {
-		value: 0
-	},
-	reducers: {
-		set(state, action) {
-			state.value = action.payload
 		}
 	}
 })
@@ -90,18 +79,16 @@ const userSlice = createSlice({
 		}
 	}
 })
-export const dragonActions = dragonsSlice.actions
+export const dragonsCacheActions = dragonsCacheSlice.actions
 export const userActions = userSlice.actions
 export const idsActions = idsSlice.actions
-export const offsetActions = offsetSlice.actions
 
 
 const store = configureStore({
 	reducer: {
-		dragons: dragonsSlice.reducer,
+		dragonsCache: dragonsCacheSlice.reducer,
 		user: userSlice.reducer,
-		ids: idsSlice.reducer,
-		offset: offsetSlice.reducer
+		ids: idsSlice.reducer
 	}
 })
 export default store

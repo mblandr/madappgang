@@ -56,8 +56,7 @@ export default function Image({ alt = '', src, className = '', onLoad, onError, 
 				<div></div>
 				<div></div>
 			</div>
-		</div>
-	
+		</div>	
 	return <>
 		{
 			isPreview

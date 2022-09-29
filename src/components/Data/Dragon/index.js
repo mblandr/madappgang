@@ -1,30 +1,25 @@
 
 
-import { userActions, dragonActions } from '../../../data/store'
-import { saveDragon, loadDragon } from '../../../data/localStorage'
+import { userActions, dragonsCacheActions } from '../../../data/store'
 import Favorite from '../../UI/Favorite'
+import { getDragonFromServer } from '../../../data/server'
+import { loadDragon, saveDragon } from '../../../data/localStorage'
 import ImageCarousel from '../../UI/ImageCarousel'
 
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 
 import style from './index.module.sass'
 import toast from 'react-hot-toast'
 
 export default function Dragon() {
-	const { id } = useParams(),
+	const { id: curId } = useParams(),
 		dispatch = useDispatch(),
-		dragons = useSelector(state => state.dragons.list),
+		dragonsCache = useSelector(state => state.dragonsCache.list),
+		[dragon, setDragon] = useState(null),
 		user = useSelector(state => state.user.user),
 		favorites = user && user.favorites || [],
-		{ name, imgUrls, description, wikiUrl, mass, height, year } = dragons.find(
-			({ id: itemId }) => id === itemId
-		),
-		imagesData = imgUrls.map(
-			imgUrl => ({
-				src: imgUrl
-			})
-		),
 		handleChangeIsFavorite = (id, isFavorite) => {
 			if (isFavorite) {
 
@@ -35,44 +30,98 @@ export default function Dragon() {
 				dispatch(userActions.addFavorite(id))
 			}
 
-		},
-		save = async () => {
-			try {
-				saveDragon({ id, name, imgUrls, description, wikiUrl, mass, height, year })
-			}
-			catch (e) {
-				toast.error(e.message)
-			}
-		},
-		load = async () => {
-			try {
-				const data = await loadDragon(id)
-				dispatch(dragonActions.update({
-					id, data
-				}))
-
-			}
-			catch (e) {
-				toast.error(e.message)
-			}
-
 		}
+	useEffect(
+		() => {
+			//найдем дракона в кэше драконов
+			let dragon = dragonsCache.find(
+				({ id }) => id === curId
+			)
 
-	return (
-		<article className={style.article}>
-			<Favorite className={style.favorite} isFavorite={favorites.includes(id)} onChangeIsFavorite={() => handleChangeIsFavorite(id, favorites.includes(id))} />
-			<h2>{name}</h2>
-			<p>{description}</p>
-			<h3>Характеристики</h3>
-			<button onClick={save}>Сохранить</button>
-			<button onClick={load}>Загрузить</button>
-			<ul>
-				<li>Масса: {mass} кг</li>
-				<li>Выста: {height} м</li>
-				<li>Дата выпуска: {new Date(year).toLocaleDateString()}</li>
-			</ul>
-			<a href={wikiUrl} target='_blank'>On wikipedia</a>
-			<ImageCarousel className={style.carousel} items={imagesData} />
-		</article >
-	)
+			if (dragon)
+				//если он в кэше, то его и используем
+				setDragon(dragon)
+
+			else {
+				//если он не в кэше, поищем в localStorage
+				dragon = loadDragon(curId)
+
+				if (dragon) {
+
+					//если он в localStorage, то возьмем из него
+					//в кэш не записываем, т.к. картинки там сериализованные
+					setDragon(dragon)
+
+					//и в фоне обновим с сервера
+					getDragonFromServer(curId)
+						.then(
+							dragon => {
+
+								//добавим в кэш
+								dispatch(dragonsCacheActions.add(dragon))
+
+								//в localStorage	- 							
+								saveDragon(dragon)
+
+								//его и используем								
+								setDragon(dragon)
+
+
+							}
+						)
+						.catch(e => toast.error(`Ошибка обновления информации с сервера: ${e.message}`))
+
+				}
+				else {
+					//если дракона нет в localStorage, то получаем с сервере					
+					getDragonFromServer(curId)
+						.then(
+							dragon => {
+
+								//и добавляем его
+								//в localStorage								
+								saveDragon(dragon)
+
+								//добавим в кэш
+								dispatch(dragonsCacheActions.add(dragon))
+
+								//его и используем
+								setDragon(dragon)
+
+
+							}
+						)
+						.catch(e => toast.error(`Ошибка обновления информации с сервера: ${e.message}`))
+				}
+			}
+		},
+		[])
+	if (dragon) {
+		const { id, name, description, mass, height, year, wikiUrl, imgUrls } = dragon,
+			items = imgUrls.map(
+				imgUrl => ({
+					src: imgUrl,
+					alt: name
+				})
+			)
+		return (
+			<article className={style.article}>
+				{
+					user
+					&&
+					<Favorite className={style.favorite} isFavorite={favorites.includes(id)} onChangeIsFavorite={() => handleChangeIsFavorite(id, favorites.includes(id))} />
+				}
+				<h2>{name}</h2>
+				<p>{description}</p>
+				<h3>Характеристики</h3>
+				<ul>
+					<li>Масса: {mass} кг</li>
+					<li>Выста: {height} м</li>
+					<li>Дата выпуска: {new Date(year).toLocaleDateString()}</li>
+				</ul>
+				<a href={wikiUrl} target='_blank'>On wikipedia</a>
+				<ImageCarousel className={style.carousel} items={items} />
+			</article >
+		)
+	}
 }
