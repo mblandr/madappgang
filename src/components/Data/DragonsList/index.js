@@ -126,6 +126,11 @@ export default function DragonsList() {
 				})
 				.catch(e => toast.error(e.message))
 				.finally(() => setIsLoading(false))
+		else {
+			const scrolled = document.documentElement.scrollTop
+			if (scrolled === 0 && offset < total)
+				setIsLoading(true)
+		}
 	},
 		[isLoading]
 	)
