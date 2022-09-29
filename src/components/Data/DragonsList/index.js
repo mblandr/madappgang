@@ -99,13 +99,10 @@ export default function DragonsList() {
 	}, [])
 
 	useEffect(() => {
-		console.log('use effect get gragons - started')
 		getDragons()
 			.then(result => {
 				idsRef.current = result
-				console.log('use effect get dragons -  result:', result)
 				dispatch(idsActions.set(result))
-				console.log('setting is loading=true')
 				setIsLoading(true)
 			})
 			.catch(e => toast.error(e.message))
@@ -113,9 +110,8 @@ export default function DragonsList() {
 		[]
 	)
 	useEffect(() => {
-		console.log('use effect loading - started, isLoading=' + isLoading)
-		if (isLoading && offset < ids.length) {
-			console.log('use effect loading - loading data', 'offset=' + offset, 'length=' + ids.length)
+
+		if (isLoading && offset < ids.length)
 			getDragon(ids[offset])
 				.then(result => {
 					dispatch(offsetActions.set(offset + 1))
@@ -124,10 +120,8 @@ export default function DragonsList() {
 				})
 				.catch(e => toast.error(e.message))
 				.finally(() => {
-					console.log('setting is loading=false')
 					setIsLoading(false)
 				})
-		}
 		else resizeHandler()
 	},
 		[isLoading]
@@ -136,7 +130,6 @@ export default function DragonsList() {
 
 	idsRef.current = ids
 	offsetRef.current = offset
-	console.log('rendering dragons list ', 'ids=', ids, 'offset=' + offset)
 	return (<>
 		<h1 className={style.title}>Список Dragons</h1>
 		{renderedDragons}
