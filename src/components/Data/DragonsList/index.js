@@ -1,4 +1,5 @@
-import { userActions, totalActions, offsetActions } from '../../../data/store'
+import { userActions, idsActions, offsetActions } from '../../../data/store'
+import { getDragons, getDragon } from '../../../data/server'
 import { setFavorites, getUser } from '../../../data/firebase'
 import Image from '../../UI/Image'
 import Favorite from '../../UI/Favorite'
@@ -17,15 +18,15 @@ import style from './index.module.sass'
 export default function DragonsList() {
 
 	const
-		totalRef = useRef(),
+		idsRef = useRef(),
 		offsetRef = useRef(),
 
 		dispatch = useDispatch(),
 		dragons = useSelector(state => state.dragons.list),
 		user = useSelector(state => state.user.user),
-		total = useSelector(state => state.total.value),
+		ids = useSelector(state => state.ids.list),
 		offset = useSelector(state => state.offset.value),
-		[isLoading, setIsLoading] = useState(true),
+		[isLoading, setIsLoading] = useState(false),
 		favorites = user && user.favorites || [],
 		handleChangeIsFavorite = (id, isFavorite) => {
 			if (isFavorite) {
@@ -68,9 +69,8 @@ export default function DragonsList() {
 		scrollHandler = () => {
 			const totalHeight = document.documentElement.scrollHeight,
 				scrolled = document.documentElement.scrollTop,
-				windowHeight = window.innerHeight
-			//console.log('scroll', scrolled + windowHeight, totalHeight - 50, offsetRef.current, totalRef.current)
-			if (scrolled + windowHeight >= totalHeight - 50 && offsetRef.current < totalRef.current)
+				windowHeight = window.innerHeight			
+			if (scrolled + windowHeight >= totalHeight - 50 && offsetRef.current < idsRef.current.length)
 				setIsLoading(true)
 		}
 
@@ -87,48 +87,29 @@ export default function DragonsList() {
 	}, [])
 
 	useEffect(() => {
-		axios
-			.post(
-				'https://api.spacexdata.com/v4/dragons/query',
-				{
-					"options": {
-						"select": "id"
-					}
-				}
-			)
+		getDragons()
 			.then(result => {
-				totalRef.current = result.data.totalDocs
-				dispatch(totalActions.set(result.data.totalDocs))
+				idsRef.current = result				
+				dispatch(idsActions.set(result))
+				setIsLoading(true)
 			})
 			.catch(e => toast.error(e.message))
 	},
 		[]
 	)
-	useEffect(() => {
-		if (isLoading && (offset < total || total === 0))
-			axios
-				.post(
-					'https://api.spacexdata.com/v4/dragons/query',
-					{
-						"options": {
-							offset,
-							select: "id name flickr_images description wikipedia launch_payload_mass height_w_trunk first_flight",
-							limit: 1
-						}
-					}
-				)
-				.then(result => {
-					const { id, name, flickr_images: imgUrls, description, wikipedia: wikiUrl, launch_payload_mass: { kg: mass }, height_w_trunk: { meters: height }, first_flight: year } = result.data.docs[0],
-						dragon = { id, name, imgUrls, description, wikiUrl, mass, height, year }
+	useEffect(() => {		
+		if (isLoading && offset < ids.length)
+			getDragon(ids[offset])
+				.then(result => {					
 					dispatch(offsetActions.set(offset + 1))
-					dispatch(dragonActions.add(dragon))
+					dispatch(dragonActions.add(result))
 
 				})
 				.catch(e => toast.error(e.message))
 				.finally(() => setIsLoading(false))
 		else {
 			const scrolled = document.documentElement.scrollTop
-			if (scrolled === 0 && offset < total)
+			if (scrolled === 0 && offset < ids.length)
 				setIsLoading(true)
 		}
 	},
@@ -136,7 +117,7 @@ export default function DragonsList() {
 	)
 
 
-	totalRef.current = total
+	idsRef.current = ids
 	offsetRef.current = offset
 	return (<>
 		<h1 className={style.title}>Список Dragons</h1>

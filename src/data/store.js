@@ -29,14 +29,14 @@ const dragonsSlice = createSlice({
 	}
 })
 
-const totalSlice = createSlice({
-	name: 'total items on server',
+const idsSlice = createSlice({
+	name: 'ids of items on server',
 	initialState: {
-		value: 0
+		list: [] 
 	},
 	reducers: {
 		set(state, action) {
-			state.value = action.payload
+			state.list = action.payload
 		}
 	}
 })
@@ -92,7 +92,7 @@ const userSlice = createSlice({
 })
 export const dragonActions = dragonsSlice.actions
 export const userActions = userSlice.actions
-export const totalActions = totalSlice.actions
+export const idsActions = idsSlice.actions
 export const offsetActions = offsetSlice.actions
 
 
@@ -100,7 +100,7 @@ const store = configureStore({
 	reducer: {
 		dragons: dragonsSlice.reducer,
 		user: userSlice.reducer,
-		total: totalSlice.reducer,
+		ids: idsSlice.reducer,
 		offset: offsetSlice.reducer
 	}
 })
