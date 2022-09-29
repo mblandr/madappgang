@@ -69,10 +69,16 @@ export default function DragonsList() {
 		scrollHandler = () => {
 			const totalHeight = document.documentElement.scrollHeight,
 				scrolled = document.documentElement.scrollTop,
-				windowHeight = window.innerHeight			
+				windowHeight = window.innerHeight
 			if (scrolled + windowHeight >= totalHeight - 50 && offsetRef.current < idsRef.current.length)
 				setIsLoading(true)
+
+		},
+		resizeHandler = () => {
+			if (window.innerHeight == document.documentElement.scrollHeight && offsetRef.current < idsRef.current.length)
+				setIsLoading(true)
 		}
+
 
 	useEffect(
 		() => {
@@ -83,35 +89,44 @@ export default function DragonsList() {
 
 	useEffect(() => {
 		document.addEventListener('scroll', scrollHandler)
-		return () => document.removeEventListener('scroll', scrollHandler)
+		window.addEventListener('resize', resizeHandler)
+		return () => {
+			document.removeEventListener('scroll', scrollHandler)
+			window.removeEventListener('resize', resizeHandler)
+		}
 	}, [])
 
 	useEffect(() => {
+		console.log('use effect get gragons - started')
 		getDragons()
 			.then(result => {
-				idsRef.current = result				
+				idsRef.current = result
+				console.log('use effect get dragons -  result:', result)
 				dispatch(idsActions.set(result))
+				console.log('setting is loading=true')
 				setIsLoading(true)
 			})
 			.catch(e => toast.error(e.message))
 	},
 		[]
 	)
-	useEffect(() => {		
-		if (isLoading && offset < ids.length)
+	useEffect(() => {
+		console.log('use effect loading - started, isLoading=' + isLoading)
+		if (isLoading && offset < ids.length) {
+			console.log('use effect loading - loading data', 'offset=' + offset, 'length=' + ids.length)
 			getDragon(ids[offset])
-				.then(result => {					
+				.then(result => {
 					dispatch(offsetActions.set(offset + 1))
 					dispatch(dragonActions.add(result))
 
 				})
 				.catch(e => toast.error(e.message))
-				.finally(() => setIsLoading(false))
-		else {
-			const scrolled = document.documentElement.scrollTop
-			if (scrolled === 0 && offset < ids.length)
-				setIsLoading(true)
+				.finally(() => {
+					console.log('setting is loading=false')
+					setIsLoading(false)
+				})
 		}
+		else resizeHandler()
 	},
 		[isLoading]
 	)
@@ -119,6 +134,7 @@ export default function DragonsList() {
 
 	idsRef.current = ids
 	offsetRef.current = offset
+	console.log('rendering dragons list ', 'ids=', ids, 'offset=' + offset)
 	return (<>
 		<h1 className={style.title}>Список Dragons</h1>
 		{renderedDragons}

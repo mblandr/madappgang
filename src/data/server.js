@@ -10,14 +10,10 @@ export const getDragons = () =>
 				}
 			}
 		)
-		.then(result => {
-			console.log('returned items', result.data.docs)
-			return result.data.docs.map(({ id }) => id)
-		})
+		.then(result => result.data.docs.map(({ id }) => id))
 
-export const getDragon = id => {
-	console.log('requester dragon', id)
-	return axios
+export const getDragon = id =>
+	axios
 		.post(
 			'https://api.spacexdata.com/v4/dragons/query',
 			{
@@ -35,4 +31,4 @@ export const getDragon = id => {
 				return { id, name, imgUrls, description, wikiUrl, mass, height, year }
 			}
 		})
-}	
+
