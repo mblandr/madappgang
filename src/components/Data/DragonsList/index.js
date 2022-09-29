@@ -75,7 +75,9 @@ export default function DragonsList() {
 
 		},
 		resizeHandler = () => {
-			if (window.innerHeight == document.documentElement.scrollHeight && offsetRef.current < idsRef.current.length)
+			const windowHeight = window.innerHeight,
+				scrollHeight = document.documentElement.scrollHeight
+			if (windowHeight === scrollHeight && offsetRef.current < idsRef.current.length)
 				setIsLoading(true)
 		}
 
