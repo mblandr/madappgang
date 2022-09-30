@@ -1,6 +1,6 @@
 
 
-import { userActions, dragonsCacheActions } from '../../../data/store'
+import { userActions, dragonsCacheActions, refreshActions } from '../../../data/store'
 import Favorite from '../../UI/Favorite'
 import { getDragonFromServer } from '../../../data/server'
 import { loadDragon, saveDragon } from '../../../data/localStorage'
@@ -18,7 +18,9 @@ export default function Dragon() {
 		dispatch = useDispatch(),
 		dragonsCache = useSelector(state => state.dragonsCache.list),
 		[dragon, setDragon] = useState(null),
+		[isLoading, setIsLoading] = useState(false),
 		user = useSelector(state => state.user.user),
+		refresh = useSelector(state => state.refresh.refresh),
 		favorites = user && user.favorites || [],
 		handleChangeIsFavorite = (id, name, isFavorite) => {
 			if (isFavorite) {
@@ -31,6 +33,29 @@ export default function Dragon() {
 			}
 
 		}
+	useEffect(() => {		
+		setIsLoading(true)
+		getDragonFromServer(curId)
+			.then(
+				dragon => {
+					//в localStorage								
+					saveDragon(dragon)
+
+					//в кэше								
+					dispatch(dragonsCacheActions.update({ id: curId, data: dragon }))
+
+					setDragon(dragon)
+					dispatch(refreshActions.set(false))
+
+				}
+			)
+			.catch(e => toast.error(`Ошибка обновления информации с сервера: ${e.message}`))
+			.finally(() => {
+				setIsLoading(false)
+			})
+	},
+		[refresh]
+	)
 	useEffect(
 		() => {
 			//найдем дракона в кэше драконов

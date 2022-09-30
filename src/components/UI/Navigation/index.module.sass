@@ -2,3 +2,33 @@
 	color: red
 .inactive
 	color: green
+.nav
+	margin-top: 0.5em
+	font-size: 2em
+	display: flex
+	align-items: center
+	justify-content: space-between
+	ul
+		display: flex
+		align-items: center
+		li
+			display: block
+			&+li
+				margin-left: 1em
+	a
+		text-decoration: none	
+@media screen and (max-width: 800px)
+	.nav
+		font-size: 1em
+		img
+			width: 100px
+@media screen and (max-width: 400px)
+	.nav
+		img
+			width: 50px			
+
+@media screen and (max-width: 400px)			
+	.nav
+		ul
+			display: block
+			text-align: right

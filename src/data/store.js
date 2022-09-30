@@ -1,6 +1,17 @@
 import { createSlice, configureStore } from '@reduxjs/toolkit'
 import { ActionCodeOperation, updateCurrentUser } from 'firebase/auth'
 
+const refreshSlice = createSlice({
+	name: 'refeshing state',
+	initialState: { refresh: false },
+	reducers: {
+		set(state, action) {
+			state.refresh = action.payload
+		}
+	}
+})
+
+
 const dragonsCacheSlice = createSlice({
 	name: 'dragons cached in memory',
 	initialState: { list: [] },
@@ -11,18 +22,24 @@ const dragonsCacheSlice = createSlice({
 		add(state, action) {
 			state.list.push(action.payload)
 		},
-		update(state, action) {
-
+		clear(state) {
+			state.list = []
+		},
+		update(state, action) {						
 			const index = state.list.findIndex(
 				({ id }) => id === action.payload.id
 			)
 
 			if (index >= 0) {
+				//debugger
 				Object.keys(action.payload.data).forEach(
 					key => state.list[index][key] = action.payload.data[key]
 				)
 				state.list[index].id = action.payload.id
 			}
+			else
+				state.list.push(action.payload)
+			
 
 		}
 
@@ -38,7 +55,10 @@ const idsSlice = createSlice({
 	reducers: {
 		set(state, action) {
 			state.list = action.payload
-		}
+		},
+		clear(state) {
+			state.list = []
+		},
 	}
 })
 
@@ -49,7 +69,7 @@ const userSlice = createSlice({
 	},
 	reducers: {
 		login(state, action) { state.user = action.payload },
-		update(state, action) {			
+		update(state, action) {
 			state.user.displayName = action.payload.displayName
 			state.user.email = action.payload.email
 		},
@@ -85,13 +105,15 @@ const userSlice = createSlice({
 export const dragonsCacheActions = dragonsCacheSlice.actions
 export const userActions = userSlice.actions
 export const idsActions = idsSlice.actions
+export const refreshActions = refreshSlice.actions
 
 
 const store = configureStore({
 	reducer: {
 		dragonsCache: dragonsCacheSlice.reducer,
 		user: userSlice.reducer,
-		ids: idsSlice.reducer
+		ids: idsSlice.reducer,
+		refresh: refreshSlice.reducer
 	}
 })
 export default store

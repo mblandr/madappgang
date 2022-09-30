@@ -55,3 +55,11 @@ export const loadDragon = id => {
 
 
 }
+
+export const clearDragons = () =>
+	localStorage.clear()
+
+
+export const clearDragon = id =>
+	localStorage.removeItem(id)
+
