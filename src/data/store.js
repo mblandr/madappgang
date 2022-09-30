@@ -49,17 +49,20 @@ const userSlice = createSlice({
 	},
 	reducers: {
 		login(state, action) { state.user = action.payload },
+		update(state, action) {			
+			state.user.displayName = action.payload.displayName
+			state.user.email = action.payload.email
+		},
 		logout(state) { state.user = null },
 		addFavorite(state, action) {
 			if (!state.user)
 				return
 			if (!state.user.favorites)
 				state.user.favorites = []
-
-			if (state.user.favorites.includes(action.payload))
+			const { id, name } = action.payload
+			if (state.user.favorites.includes(id))
 				return
-
-			const newFavorites = [...state.user.favorites, action.payload]
+			const newFavorites = [...state.user.favorites, { id, name }]
 			state.user.favorites = newFavorites
 		},
 		removeFavorite(state, action) {
@@ -68,7 +71,7 @@ const userSlice = createSlice({
 			if (!state.user.favorites)
 				state.user.favorites = []
 			const newFavorites = state.user.favorites.filter(
-				id => id !== action.payload
+				({ id }) => id !== action.payload
 			)
 			state.user.favorites = newFavorites
 		},

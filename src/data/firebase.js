@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { getAuth, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, sendEmailVerification } from 'firebase/auth'
+import { getAuth, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, EmailAuthProvider, sendEmailVerification, reauthenticateWithCredential, reauthenticateWithPopup, updateProfile, updatePassword, updateEmail, sendPasswordResetEmail } from 'firebase/auth'
 import { doc, getDoc, setDoc, getFirestore } from 'firebase/firestore'
 
 
@@ -31,6 +31,11 @@ const humanErrorText = e => {
 		'auth/operation-not-allowed': 'Действие не разрешено',
 		'auth/too-many-requests': 'Попробуйте позже',
 		'auth/cancelled-popup-request': 'Действие отменено',
+		'auth/requires-recent-login': 'Необходим недавний вход в систему',
+		'auth/internal-error': 'Внутренняя ошибка',
+		'auth/invalid-credential': 'Неверные данные для входа',
+		"auth/invalid-verification-code": 'Неверный код подтверждения',
+		"auth/invalid-verification-id": 'Неверный идентификатор подтверждения'
 
 	}
 	if (e.code)
@@ -147,5 +152,68 @@ export const getUser = async id => {
 		catch (e) {
 			throw Error(humanErrorText(e))
 		}
+	}
+}
+
+const reAuth = async (password) => {
+	const user = auth.currentUser,
+		provider = user.providerData[0].providerId
+	try {
+		if (provider === 'password') {
+			const credential = EmailAuthProvider.credential(
+				user.email,
+				password
+			)
+			await reauthenticateWithCredential(user, credential)
+		}
+		else
+			await reauthenticateWithPopup(googleProvider)
+
+	} catch (e) {
+		throw Error(humanErrorText(e))
+	}
+}
+
+export const updateInfo = async ({ displayName, oldDisplayName, email, oldEmail, password, oldPassword }) => {
+	let user = auth.currentUser
+	await reAuth(oldPassword)
+	try {
+		if (displayName !== oldDisplayName) {
+			const userRef = doc(db, 'users', user.uid)
+			const userDoc = await getDoc(userRef)
+			if (!userDoc.exists())
+				throw Error('Пользователь не существует')
+			const userData = userDoc.data()
+			userData.displayName = displayName
+			await setDoc(userRef, userData)
+			await updateProfile(user, { displayName })
+		}
+		if (email !== oldEmail) {
+			await updateEmail(user, email)
+			const userRef = doc(db, 'users', user.uid)
+			const userDoc = await getDoc(userRef)
+			if (!userDoc.exists())
+				throw Error('Пользователь не существует')
+			const userData = userDoc.data()
+			userData.email = email
+			await setDoc(userRef, userData)
+			await sendEmailVerification(user)
+		}
+
+		if (password !== oldPassword && password.trim())
+			await updatePassword(user, password)
+
+	}
+	catch (e) {
+		throw Error(humanErrorText(e))
+	}
+}
+
+export const sendResetPasswordLetter = async email => {
+
+	try {
+		await sendPasswordResetEmail(auth, email)
+	} catch (e) {
+		throw Error(humanErrorText(e))
 	}
 }

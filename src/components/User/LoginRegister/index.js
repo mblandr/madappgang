@@ -1,14 +1,15 @@
 import style from './index.module.sass'
-import { ReactComponent as GoogleIcon } from './google.svg'
+
 import TextInput from '../../UI/TextInput'
-import { signIn, signInGoogle, signUp, sendLetter, refreshData } from '../../../data/firebase'
+import { signIn, signInGoogle, signUp, sendLetter, refreshData, reAuth } from '../../../data/firebase'
 import { userActions } from '../../../data/store'
 import { setCookie } from '../../../data/cookie'
 
 import toast from 'react-hot-toast'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useDispatch } from 'react-redux'
+import Button from '../../UI/Button'
 
 export default function LoginRegister() {
 	const dispatch = useDispatch(),
@@ -46,9 +47,10 @@ export default function LoginRegister() {
 			try {
 				if (id === 'signIn') {
 					const userData = await signIn(formData.email, formData.password)
-					let emailVerified = userData.emailVerified
-					if (!emailVerified)
-						emailVerified = await refreshData()
+					const { emailVerified } = await refreshData()
+					//let emailVerified = userData.emailVerified
+					//if (!emailVerified)
+					//	emailVerified = await refreshData()
 					if (!emailVerified) {
 						toast.error('Email не подтвержден')
 						await sendLetter()
@@ -62,8 +64,8 @@ export default function LoginRegister() {
 								favorites: userData.favorites,
 							})
 						)
-
-						setCookie('user', userData.id, { 'max-age': 3600 * 24 * 30 })
+						if (formData.saveUser)
+							setCookie('user', userData.id, { 'max-age': 3600 * 24 * 30 })
 						return navigate('/')
 					}
 				}
@@ -160,7 +162,7 @@ export default function LoginRegister() {
 			{
 				!formData.newUser
 				&&
-				<div>
+				<div className={style.boxes}>
 					<label>
 						<input
 							name='saveUser'
@@ -171,6 +173,7 @@ export default function LoginRegister() {
 						/>
 						Запомнить
 					</label>
+					<Link to='/resetPwd'>Забыли пароль?</Link>
 				</div>
 			}
 			<div className={style.btns}>
@@ -178,28 +181,29 @@ export default function LoginRegister() {
 					formData.newUser
 						?
 
-						<button
+						<Button
 							className={style.button}
 							id='signUp'
 						>
 							Регистрация
-						</button>
+						</Button>
 						:
 						<>
-							<button
+							<Button
 								id='signIn'
 								className={style.button}
 							>
 								Вход
-							</button>
-							<button
+							</Button>
+							<Button
 								className={style['button-alt']}
+								google
 								type="button"
 								onClick={handleSignInGoogle}
 							>
-								<GoogleIcon className={style.icon} />
+								
 								Вход с Google
-							</button>
+							</Button>
 						</>
 				}
 			</div>

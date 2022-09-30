@@ -29,41 +29,18 @@ export default function DragonsList() {
 		[dragons, setDragons] = useState([]),
 		[isLoading, setIsLoading] = useState(false),
 		favorites = user && user.favorites || [],
-		handleChangeIsFavorite = (id, isFavorite) => {
+		handleChangeIsFavorite = (id, name, isFavorite) => {
 			if (isFavorite) {
 
 				dispatch(userActions.removeFavorite(id))
 			}
 			else {
 
-				dispatch(userActions.addFavorite(id))
+				dispatch(userActions.addFavorite({ id, name }))
 			}
 
 		},
-		renderedDragons = dragons.map(
-			({ id, name, imgUrls, description, wikiUrl }) => <article key={id} className={style.article}>
-				{
-					user
-					&&
-					<Favorite className={style.favorite} isFavorite={favorites.includes(id)} onChangeIsFavorite={() => handleChangeIsFavorite(id, favorites.includes(id))} />
-				}
-				<h2>{name}</h2>
-				<p>{description}</p>
-				<a href={wikiUrl} target='_blank' rel="noreferrer">On wikipedia</a>
-				<Link to={`/${id}`} className={style.more}>More info</Link>
-				<div className={style.images}>
 
-					{imgUrls.map(
-						imgUrl =>
-							<div key={imgUrl} className={style['img-wrapper']}>
-								<div className={style['img-inner']}>
-									<Image key={imgUrl} src={imgUrl} className={style.img} />
-								</div>
-							</div>
-					)}
-				</div>
-			</article >
-		),
 		scrollHandler = () => {
 
 			const totalHeight = document.documentElement.scrollHeight,
@@ -87,7 +64,36 @@ export default function DragonsList() {
 				setIsLoading(true)
 
 
-		}
+		},
+		renderedDragons = dragons.map(
+			({ id, name, imgUrls, description, wikiUrl }) => {
+				const isFavorite = favorites.some(
+					({ id: curId }) => curId === id
+				)
+				return <article key={id} className={style.article}>
+					{
+						user
+						&&
+						<Favorite className={style.favorite} isFavorite={isFavorite} onChangeIsFavorite={() => handleChangeIsFavorite(id, name,isFavorite)} />
+					}
+					<h2>{name}</h2>
+					<p>{description}</p>
+					<a href={wikiUrl} target='_blank' rel="noreferrer">On wikipedia</a>
+					<Link to={`/${id}`} className={style.more}>More info</Link>
+					<div className={style.images}>
+
+						{imgUrls.map(
+							imgUrl =>
+								<div key={imgUrl} className={style['img-wrapper']}>
+									<div className={style['img-inner']}>
+										<Image key={imgUrl} src={imgUrl} className={style.img} />
+									</div>
+								</div>
+						)}
+					</div>
+				</article >
+			}
+		)
 
 
 	useEffect(

@@ -20,14 +20,14 @@ export default function Dragon() {
 		[dragon, setDragon] = useState(null),
 		user = useSelector(state => state.user.user),
 		favorites = user && user.favorites || [],
-		handleChangeIsFavorite = (id, isFavorite) => {
+		handleChangeIsFavorite = (id, name, isFavorite) => {
 			if (isFavorite) {
 
 				dispatch(userActions.removeFavorite(id))
 			}
 			else {
 
-				dispatch(userActions.addFavorite(id))
+				dispatch(userActions.addFavorite({ id, name }))
 			}
 
 		}
@@ -103,13 +103,16 @@ export default function Dragon() {
 					src: imgUrl,
 					alt: name
 				})
+			),
+			isFavorite = favorites.some(
+				({ id: curId }) => curId === id
 			)
 		return (
 			<article className={style.article}>
 				{
 					user
 					&&
-					<Favorite className={style.favorite} isFavorite={favorites.includes(id)} onChangeIsFavorite={() => handleChangeIsFavorite(id, favorites.includes(id))} />
+					<Favorite className={style.favorite} isFavorite={isFavorite} onChangeIsFavorite={() => handleChangeIsFavorite(id, name, isFavorite)} />
 				}
 				<h2>{name}</h2>
 				<p>{description}</p>

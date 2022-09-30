@@ -2,6 +2,7 @@ import { dragonActions, userActions } from './data/store'
 
 
 import Navigation from './components/UI/Navigation'
+import ResetPassword from './components/User/ResetPassword'
 import Profile from './components/User/Profile'
 import Login from './components/User/LoginRegister'
 import Logout from './components/User/Logout'
@@ -66,6 +67,16 @@ export default function App() {
 							<Profile />
 							:
 							<Navigate to='/' />
+					}
+				/>
+				<Route
+					path='/resetPwd'
+					element={
+						user
+							?
+							<Navigate to='/' />
+							:
+							<ResetPassword />
 					}
 				/>
 				<Route
