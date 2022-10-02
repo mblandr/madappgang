@@ -1,11 +1,18 @@
-import { userActions, idsActions, dragonsCacheActions, refreshActions } from '../../../data/store'
+import {
+	userActions,
+	idsActions,
+	dragonsCacheActions,
+	refreshActions,
+} from '../../../data/store'
 import { getDragonsFromServer, getDragonFromServer } from '../../../data/server'
-import { clearDragons, loadDragon, saveDragon } from '../../../data/localStorage'
+import {
+	clearDragons,
+	loadDragon,
+	saveDragon,
+} from '../../../data/localStorage'
 import { setFavorites, getUser } from '../../../data/firebase'
 import Image from '../../UI/Image'
 import Favorite from '../../UI/Favorite'
-
-
 
 import { useEffect, useState, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
@@ -17,9 +24,7 @@ import { toast } from 'react-hot-toast'
 import style from './index.module.sass'
 
 export default function DragonsList() {
-
-	const
-		idsRef = useRef(),
+	const idsRef = useRef(),
 		offsetRef = useRef(),
 		dispatch = useDispatch(),
 		dragonsCache = useSelector(state => state.dragonsCache.list),
@@ -29,22 +34,15 @@ export default function DragonsList() {
 		[offset, setOffset] = useState(0),
 		[dragons, setDragons] = useState([]),
 		[isLoading, setIsLoading] = useState(false),
-		favorites = user && user.favorites || [],
-
+		favorites = (user && user.favorites) || [],
 		handleChangeIsFavorite = (id, name, isFavorite) => {
 			if (isFavorite) {
-
 				dispatch(userActions.removeFavorite(id))
-			}
-			else {
-
+			} else {
 				dispatch(userActions.addFavorite({ id, name }))
 			}
-
 		},
-
 		scrollHandler = () => {
-
 			const totalHeight = document.documentElement.scrollHeight,
 				scrolled = document.documentElement.scrollTop,
 				windowHeight = window.innerHeight,
@@ -52,59 +50,77 @@ export default function DragonsList() {
 				i = idsRef.current.length
 			if (scrolled + windowHeight >= totalHeight - 50 && o > 0 && o < i)
 				setIsLoading(true)
-
-
 		},
 		resizeHandler = () => {
-
 			const windowHeight = window.innerHeight,
 				scrollHeight = document.documentElement.scrollHeight,
 				o = offsetRef.current,
 				i = idsRef.current.length
-			if (windowHeight === scrollHeight && o > 0 && o < i)
-				setIsLoading(true)
-
-
+			if (windowHeight === scrollHeight && o > 0 && o < i) setIsLoading(true)
 		},
 		renderedDragons = dragons.map(
 			({ id, name, imgUrls, description, wikiUrl }) => {
-				const isFavorite = favorites.some(
-					({ id: curId }) => curId === id
-				)
-				return <article key={id} className={style.article}>
-					{
-						user
-						&&
-						<Favorite className={style.favorite} isFavorite={isFavorite} onChangeIsFavorite={() => handleChangeIsFavorite(id, name, isFavorite)} />
-					}
-					<h2>{name}</h2>
-					<p>{description}</p>
-					<a href={wikiUrl} target='_blank' rel="noreferrer">On wikipedia</a>
-					<Link to={`/${id}`} className={style.more}>More info</Link>
-					<div className={style.images}>
-
-						{imgUrls.map(
-							imgUrl =>
-								<div key={imgUrl} className={style['img-wrapper']}>
-									<div className={style['img-inner']}>
-										<Image key={imgUrl} src={imgUrl} className={style.img} />
-									</div>
-								</div>
+				const isFavorite = favorites.some(({ id: curId }) => curId === id)
+				return (
+					<article key={id} className={style.article}>
+						{user && (
+							<Favorite
+								className={style.favorite}
+								isFavorite={isFavorite}
+								onChangeIsFavorite={() =>
+									handleChangeIsFavorite(id, name, isFavorite)
+								}
+							/>
 						)}
-					</div>
-				</article >
+						<h2>{name}</h2>
+						<p>{description}</p>
+						<a href={wikiUrl} target='_blank' rel='noreferrer'>
+							On wikipedia
+						</a>
+						<Link to={`/${id}`} className={style.more}>
+							More info
+						</Link>
+						<div className={style.images}>
+							{imgUrls.map((imgUrl, index) =>
+								imgUrl.oldSrc ? (
+									<div
+										key={imgUrl.src.substring(
+											0,
+											Math.min(imgUrl.src.length, 1024)
+										)}
+										className={style['img-wrapper']}
+									>
+										<div className={style['img-inner']}>
+											<Image
+												key={imgUrl}
+												oldSrc={imgUrl.oldSrc}
+												src={imgUrl.src}
+												className={style.img}
+											/>
+										</div>
+									</div>
+								) : (
+									<div
+										key={imgUrl.substring(0, Math.min(imgUrl.length, 1024))}
+										className={style['img-wrapper']}
+									>
+										<div className={style['img-inner']}>
+											<Image key={imgUrl} src={imgUrl} className={style.img} />
+										</div>
+									</div>
+								)
+							)}
+						</div>
+					</article>
+				)
 			}
 		)
 
-
-	useEffect(
-		() => {
-			if (user)
-				setFavorites(favorites)
-		},
-		[user])
-
 	useEffect(() => {
+		if (user) setFavorites(favorites)
+	}, [user])
+
+	useEffect(() => {		
 		document.addEventListener('scroll', scrollHandler)
 		window.addEventListener('resize', resizeHandler)
 		return () => {
@@ -124,27 +140,21 @@ export default function DragonsList() {
 				dispatch(refreshActions.set(false))
 			})
 			.catch(e => toast.error(e.message))
-	},
-		[refresh]
-	)
+	}, [refresh])
 	useEffect(() => {
 		if (isLoading && offset < ids.length) {
 			const newId = ids[offset]
 
 			//найдем дракона в кэше драконов
-			let dragon = dragonsCache.find(
-				({ id }) => id === newId
-			)
+			let dragon = dragonsCache.find(({ id }) => id === newId)
 
 			if (dragon) {
-
 				//если он в кэше, то просто добавим в  список драконов
 				setDragons(dragons => [...dragons, dragon])
 				setIsLoading(false)
 				//обновим смещение
 				setOffset(offset => offset + 1)
-			}
-			else {
+			} else {
 				//если он не в кэше, поищем в localStorage
 				dragon = loadDragon(newId)
 
@@ -154,73 +164,73 @@ export default function DragonsList() {
 
 					//и в фоне обновим с сервера
 					getDragonFromServer(newId)
-						.then(
-							dragon => {
+						.then(dragon => {
+							//в localStorage
+							saveDragon(dragon)
 
-								//в localStorage								
-								saveDragon(dragon)
+							//в кэше
+							dispatch(dragonsCacheActions.add(dragon))
 
-								//в кэше								
-								dispatch(dragonsCacheActions.add(dragon))
-
-								//теперь в списке драконов - он там последний								
-								setDragons(
-									dragons => {
-										const newDragons = dragons.slice()
-										newDragons.splice(dragons.length - 1, 1, dragon)
-										return newDragons
-									}
-								)
-								//обновим смещение								
-								setOffset(old => old + 1)
-							}
+							//теперь в списке драконов - он там последний							
+							const tempDragon = Object.assign({}, dragon)
+							setDragons(dragons => {
+								const newDragons = dragons.slice(),
+									imgLength = dragon.imgUrls.length,
+									oldDragon = dragons[dragons.length - 1]
+								tempDragon.imgUrls = oldDragon.imgUrls.map((imgUrl, index) => ({
+									src: index < imgLength ? dragon.imgUrls[index] : '',
+									oldSrc: imgUrl,
+								}))								
+								newDragons.splice(dragons.length - 1, 1, tempDragon)
+								return newDragons
+							})
+							//обновим смещение
+							setOffset(old => old + 1)
+						})
+						.catch(e =>
+							toast.error(
+								`Ошибка обновления информации с сервера: ${e.message}`
+							)
 						)
-						.catch(e => toast.error(`Ошибка обновления информации с сервера: ${e.message}`))
 						.finally(() => {
 							setIsLoading(false)
 						})
-
-				}
-				else {
-					//если дракона нет в localStorage, то получаем с сервере					
+				} else {
+					//если дракона нет в localStorage, то получаем с сервере
 					getDragonFromServer(newId)
-						.then(
-							dragon => {
+						.then(dragon => {
+							//и добавляем его
+							//в localStorage
+							saveDragon(dragon)
 
-								//и добавляем его
-								//в localStorage								
-								saveDragon(dragon)
+							//в кэш
+							dispatch(dragonsCacheActions.add(dragon))
 
-								//в кэш								
-								dispatch(dragonsCacheActions.add(dragon))
+							//теперь в список драконов
+							setDragons(dragons => [...dragons, dragon])
 
-								//теперь в список драконов								
-								setDragons(dragons => [...dragons, dragon])
-
-								//обновим смещение								
-								setOffset(old => old + 1)
-
-							}
+							//обновим смещение
+							setOffset(old => old + 1)
+						})
+						.catch(e =>
+							toast.error(
+								`Ошибка обновления информации с сервера: ${e.message}`
+							)
 						)
-						.catch(e => toast.error(`Ошибка обновления информации с сервера: ${e.message}`))
 						.finally(() => {
 							setIsLoading(false)
 						})
 				}
 			}
-
-		}
-		else resizeHandler()
-	},
-		[isLoading]
-	)
-
+		} else resizeHandler()
+	}, [isLoading])
 
 	idsRef.current = ids
 	offsetRef.current = offset
-	return (<>
-		<h1 className={style.title}>Список Dragons</h1>
-		{renderedDragons}
-	</>
+	return (
+		<>
+			<h1 className={style.title}>Список Dragons</h1>
+			{renderedDragons}
+		</>
 	)
 }

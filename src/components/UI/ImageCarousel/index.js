@@ -1,36 +1,44 @@
 import style from './index.module.sass'
 import Image from '../Image'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
-export default function ImageCarousel({ className = '', items = [], ...props }) {
-	useEffect(
-		() => {
-			const int = setInterval(() => {
-
-			}, 3000)
-			return () => clearInterval(int)
-		},
-		[])
-	let previewStarted = false
+export default function ImageCarousel({
+	className = '',
+	items = [],
+	...props
+}) {
 	const [index, setIndex] = useState(0),
-		moveNext = () => {
-			setTimeout(() => {
-				const nextIndex = items.length === 0 ? 0 : (index + 1) % items.length
-				if (!previewStarted) setIndex(nextIndex)
-			}, 3000)
-
+		indexRef = useRef(),
+		isPreviewStartedRef = useRef(false),
+		itemsRef = useRef([]),
+		getNextIndex = index =>
+			itemsRef.current.length === 0 ? 0 : (index + 1) % itemsRef.current.length,
+		onStartPreview = () => {
+			isPreviewStartedRef.current = true
 		},
-		onStartPreview = () => { previewStarted = true },
 		onEndPreview = () => {
-			previewStarted = false
+			isPreviewStartedRef.current = false
 			moveNext()
+		},
+		moveNext = () =>
+			setTimeout(() => {
+				if (!isPreviewStartedRef.current) setIndex(getNextIndex(index))
+			}, 3000),
+		removeCachedImg = index => {}
 
-		}
-	if (items.length === 0)
-		return <p>No items in carousel</p>
+	if (items.length === 0) return <p>No items in carousel</p>
 
+	const { src, oldSrc, alt } = items[index]
 
-	const { src, alt } = items[index]	
+	indexRef.current = index
+	itemsRef.current = items
+	console.log(
+		'image carousel',
+		'src=',
+		src.substring(0, 50),
+		'oldSrc=',
+		oldSrc.substring(0, 50)
+	)
 	return (
 		<div className={`${style.carousel} ${className}`.trim()}>
 			<div className={style['carousel-inner']}>
@@ -38,13 +46,17 @@ export default function ImageCarousel({ className = '', items = [], ...props }) 
 					{...props}
 					className={style['carousel-img']}
 					src={src}
+					oldSrc={oldSrc}
 					alt={alt}
-					onLoad={moveNext}
+					onLoad={() => {
+						removeCachedImg(index)
+						moveNext()
+					}}
 					onError={moveNext}
 					onStartPreview={onStartPreview}
 					onEndPreview={onEndPreview}
 				/>
 			</div>
-		</div >
+		</div>
 	)
 }
