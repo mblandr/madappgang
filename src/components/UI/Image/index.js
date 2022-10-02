@@ -1,29 +1,36 @@
 import { ReactComponent as NoImg } from './no-img.svg'
+import Loader from '../Loader'
 import style from './index.module.sass'
-
 
 import { useState, useEffect } from 'react'
 
-export default function Image({ alt = '', src, className = '', onLoad, onError, onStartPreview, onEndPreview, ...props }) {
-	useEffect(
-		() => {
-			const img = document.createElement('img')
+export default function Image({
+	alt = '',
+	src,
+	className = '',
+	onLoad,
+	onError,
+	onStartPreview,
+	onEndPreview,
+	...props
+}) {
+	useEffect(() => {
+		const img = document.createElement('img')
 
-			img.addEventListener('error', () => {
-				setError(true)
-				setIsPreview(false)
-				setIsLoading(false)
-				onError && onError()
-			})
-			img.addEventListener('load', () => {
-				setIsLoading(false)
-				setIsPreview(false)
-				setError(false)
-				onLoad && onLoad()
-			})
-			img.src = src
-		},
-		[src])
+		img.addEventListener('error', () => {
+			setError(true)
+			setIsPreview(false)
+			setIsLoading(false)
+			onError && onError()
+		})
+		img.addEventListener('load', () => {
+			setIsLoading(false)
+			setIsPreview(false)
+			setError(false)
+			onLoad && onLoad()
+		})
+		img.src = src
+	}, [src])
 	const [isLoading, setIsLoading] = useState(true),
 		[error, setError] = useState(false),
 		[isPreview, setIsPreview] = useState(false),
@@ -45,37 +52,27 @@ export default function Image({ alt = '', src, className = '', onLoad, onError, 
 		}, 850)
 	}
 
-	if (error)
-		return <NoImg />
+	if (error) return <NoImg />
 
-	if (isLoading)
-		return <div className={`${style.wrapper} ${className}`}>
-			<div className={style.ring}>
-				<div></div>
-				<div></div>
-				<div></div>
-				<div></div>
-			</div>
-		</div>	
-	return <>
-		{
-			isPreview
-			&&
-			<div
-				className={`${style.full} ${isHiding ? style.hide : ''}`.trim()}
-				onClick={hideFullImage}
-			>
-				<img src={src} />
-			</div>
-		}
+	return (
+		<>
+			{isLoading && <Loader className={`${style.wrapper} ${className}`} />}
+			{isPreview && (
+				<div
+					className={`${style.full} ${isHiding ? style.hide : ''}`.trim()}
+					onClick={hideFullImage}
+				>
+					<img src={src} />
+				</div>
+			)}
 
-		<img
-			{...props}
-			className={`${style.img} ${className}`.trim()}
-			src={src}
-			alt={alt}
-			onClick={showFullImage}
-		/>
-
-	</>
+			<img
+				{...props}
+				className={`${style.img} ${className}`.trim()}
+				src={src}
+				alt={alt}
+				onClick={showFullImage}
+			/>
+		</>
+	)
 }
