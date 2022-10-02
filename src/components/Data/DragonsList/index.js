@@ -14,7 +14,7 @@ import { setFavorites, getUser } from '../../../data/firebase'
 import Image from '../../UI/Image'
 import Favorite from '../../UI/Favorite'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { dragonActions } from '../../../data/store'
 import { Link } from 'react-router-dom'
@@ -58,69 +58,55 @@ export default function DragonsList() {
 				i = idsRef.current.length
 			if (windowHeight === scrollHeight && o > 0 && o < i) setIsLoading(true)
 		},
-		renderedDragons = dragons.map(
-			({ id, name, imgUrls, description, wikiUrl }) => {
-				const isFavorite = favorites.some(({ id: curId }) => curId === id)
-				return (
-					<article key={id} className={style.article}>
-						{user && (
-							<Favorite
-								className={style.favorite}
-								isFavorite={isFavorite}
-								onChangeIsFavorite={() =>
-									handleChangeIsFavorite(id, name, isFavorite)
-								}
-							/>
-						)}
-						<h2>{name}</h2>
-						<p>{description}</p>
-						<a href={wikiUrl} target='_blank' rel='noreferrer'>
-							On wikipedia
-						</a>
-						<Link to={`/${id}`} className={style.more}>
-							More info
-						</Link>
-						<div className={style.images}>
-							{imgUrls.map((imgUrl, index) =>
-								imgUrl.oldSrc ? (
-									<div
-										key={imgUrl.src.substring(
-											0,
-											Math.min(imgUrl.src.length, 1024)
-										)}
-										className={style['img-wrapper']}
-									>
-										<div className={style['img-inner']}>
-											<Image
-												key={imgUrl}
-												oldSrc={imgUrl.oldSrc}
-												src={imgUrl.src}
-												className={style.img}
-											/>
-										</div>
-									</div>
-								) : (
-									<div
-										key={imgUrl.substring(0, Math.min(imgUrl.length, 1024))}
-										className={style['img-wrapper']}
-									>
-										<div className={style['img-inner']}>
-											<Image key={imgUrl} src={imgUrl} className={style.img} />
-										</div>
-									</div>
-								)
+		renderedDragons = useMemo(
+			() =>
+				dragons.map(({ id, name, imgUrls, description, wikiUrl }) => {
+					console.log('rendered dragons', imgUrls)
+					const isFavorite = favorites.some(({ id: curId }) => curId === id)
+					return (
+						<article key={id} className={style.article}>
+							{user && (
+								<Favorite
+									className={style.favorite}
+									isFavorite={isFavorite}
+									onChangeIsFavorite={() =>
+										handleChangeIsFavorite(id, name, isFavorite)
+									}
+								/>
 							)}
-						</div>
-					</article>
-				)
-			}
+							<h2>{name}</h2>
+							<p>{description}</p>
+							<a href={wikiUrl} target='_blank' rel='noreferrer'>
+								On wikipedia
+							</a>
+							<Link to={`/${id}`} className={style.more}>
+								More info
+							</Link>
+							<div className={style.images}>
+								{imgUrls.map(
+									(imgUrl, index) =>
+										index === 0 && (
+											<div key={imgUrl} className={style['img-wrapper']}>
+												<div className={style['img-inner']}>
+													<Image src={imgUrl} className={style.img} />
+												</div>
+											</div>
+										)
+								)}
+							</div>
+						</article>
+					)
+				}),
+			[dragons]
 		)
-
+	useEffect(() => {
+		if (user) setFavorites(favorites)
+	}, [dragons])
 	useEffect(() => {
 		if (user) setFavorites(favorites)
 	}, [user])
 
-	useEffect(() => {		
+	useEffect(() => {
 		document.addEventListener('scroll', scrollHandler)
 		window.addEventListener('resize', resizeHandler)
 		return () => {
@@ -159,7 +145,7 @@ export default function DragonsList() {
 				dragon = loadDragon(newId)
 
 				if (dragon) {
-					//если он в localStorage, то добавим в список, но не в кэш - в LocalStorage картинки сериализованные					
+					//если он в localStorage, то добавим в список, но не в кэш - в LocalStorage картинки сериализованные
 					setDragons(dragons => [...dragons, dragon])
 
 					//и в фоне обновим с сервера
@@ -171,19 +157,9 @@ export default function DragonsList() {
 							//в кэше
 							dispatch(dragonsCacheActions.add(dragon))
 
-							//теперь в списке драконов - он там последний							
+							//теперь в списке драконов - он там последний
 							const tempDragon = Object.assign({}, dragon)
-							setDragons(dragons => {
-								const newDragons = dragons.slice(),
-									imgLength = dragon.imgUrls.length,
-									oldDragon = dragons[dragons.length - 1]
-								tempDragon.imgUrls = oldDragon.imgUrls.map((imgUrl, index) => ({
-									src: index < imgLength ? dragon.imgUrls[index] : '',
-									oldSrc: imgUrl,
-								}))								
-								newDragons.splice(dragons.length - 1, 1, tempDragon)
-								return newDragons
-							})
+							setDragons(dragons => (dragons.push(), [...dragons, dragon]))
 							//обновим смещение
 							setOffset(old => old + 1)
 						})

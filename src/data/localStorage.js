@@ -1,46 +1,59 @@
-export const saveDragon = ({ id, imgUrls, ...otherFields }) => {
-	const canvas = document.createElement('canvas')
-	const imgPromises = imgUrls.map(
-		image =>
-			new Promise((resolve, reject) => {
-				if (image instanceof HTMLElement) {
-					const ctx = canvas.getContext('2d')
-					canvas.height = image.naturalHeight
-					canvas.width = image.naturalWidth
-					ctx.drawImage(image, 0, 0)
-					resolve(canvas.toDataURL())
-				} else {
-					fetch(image)
-						.then(res => res.blob())
-						.then(blob => {
-							const reader = new FileReader()
-							reader.onload = () => resolve(reader.result)
-							reader.onerror = e => reject(e)
-							reader.readAsDataURL(blob)
-						})
-						.catch(e => reject(e))
-				}
-			})
-	)
-	return Promise.allSettled(imgPromises).then(results => {
-		const imgUrls = results.map(result =>
-			result.status === 'fulfilled' ? result.value : ''
-		)
-		const data = JSON.stringify({ imgUrls, ...otherFields })
-		localStorage.setItem(id, data)
-		return data
-	})
+export const saveDragon = ({ id, ...otherFields }) => {
+	const data = JSON.stringify({ ...otherFields })
+	localStorage.setItem(`dragon:${id}`, data)
 }
 
 export const loadDragon = id => {
 	const data = localStorage.getItem(id)
 	if (!data) return false
-
 	const result = JSON.parse(data)
 	result.id = id
 	return result
 }
 
-export const clearDragons = () => localStorage.clear()
+export const clearDragons = () => {
+	for (let i = 0; i < localStorage.length; i++) {
+		const keyName = localStorage.key(i)
+		keyName.startsWith('dragon:') && localStorage.removeItem(keyName)
+	}
+}
 
-export const clearDragon = id => localStorage.removeItem(id)
+export const clearDragon = id => localStorage.removeItem(`dragon:${id}`)
+
+export const loadImageData = url => localStorage.getItem(`image:${url}`)
+
+export const saveImageData = url => {
+	console.log('saved images data')
+	const oldDate = loadImageDate(url)
+	return new Promise((resolve, reject) => {
+		fetch(url)
+			.then(res => {
+				const date = res.headers.get('last-modified')
+				if (date && oldDate && date <= oldDate) throw Error('Too old')
+				return res.blob().then(blob => ({
+					date,
+					blob,
+				}))
+			})
+
+			.then(res => {
+				const reader = new FileReader()
+				reader.onload = () => {
+					localStorage.setItem(`image:${url}`, reader.result)
+					localStorage.setItem(`date:${url}`, res.date)
+					resolve()
+				}
+				reader.onerror = e => reject(e)
+				reader.readAsDataURL(res.blob)
+			})
+			.catch(e => {
+				if (e.message !== 'Too old') reject(e)
+			})
+	})
+}
+
+const loadImageDate = url => {
+	const data = localStorage.getItem(`date:${url}`)
+	if (!data) return false
+	return new Date(+data * 1000)
+}

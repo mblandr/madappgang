@@ -85,20 +85,14 @@ export default function Dragon() {
 
 				//и в фоне обновим с сервера
 				getDragonFromServer(curId)
-					.then(newDragon => {
+					.then(dragon => {
 						//добавим в кэш
-						dispatch(dragonsCacheActions.add(newDragon))
+						dispatch(dragonsCacheActions.add(dragon))
 
 						//в localStorage	-
-						saveDragon(newDragon)
-						const tempDragon = Object.assign({}, dragon),
-							imgLength = newDragon.imgUrls.length
-						tempDragon.imgUrls = dragon.imgUrls.map((imgUrl, index) => ({
-							src: index < imgLength ? newDragon.imgUrls[index] : '',
-							oldSrc: imgUrl,
-						}))
+						saveDragon(dragon)
 						//его и используем
-						setDragon(tempDragon)
+						setDragon(dragon)
 					})
 					.catch(e =>
 						toast.error(`Ошибка обновления информации с сервера: ${e.message}`)
@@ -127,8 +121,7 @@ export default function Dragon() {
 		const { id, name, description, mass, height, year, wikiUrl, imgUrls } =
 				dragon,
 			items = imgUrls.map(imgUrl => ({
-				src: imgUrl.src || imgUrl,
-				oldSrc: imgUrl.oldSrc || '',
+				src: imgUrl,
 				alt: name,
 			})),
 			isFavorite = favorites.some(({ id: curId }) => curId === id)
@@ -153,10 +146,8 @@ export default function Dragon() {
 				</ul>
 				<a href={wikiUrl} target='_blank'>
 					On wikipedia
-				</a>
-				<CacheContext.Provider value={removeCachedImg}>
-					<ImageCarousel className={style.carousel} items={items} />
-				</CacheContext.Provider>
+				</a>				
+					<ImageCarousel className={style.carousel} items={items} />				
 			</article>
 		)
 	}

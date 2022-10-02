@@ -22,23 +22,16 @@ export default function ImageCarousel({
 		},
 		moveNext = () =>
 			setTimeout(() => {
+				console.log('timeout called')
 				if (!isPreviewStartedRef.current) setIndex(getNextIndex(index))
-			}, 3000),
-		removeCachedImg = index => {}
+			}, 3000)
 
 	if (items.length === 0) return <p>No items in carousel</p>
 
-	const { src, oldSrc, alt } = items[index]
+	const { src, alt } = items[index]
 
 	indexRef.current = index
 	itemsRef.current = items
-	console.log(
-		'image carousel',
-		'src=',
-		src.substring(0, 50),
-		'oldSrc=',
-		oldSrc.substring(0, 50)
-	)
 	return (
 		<div className={`${style.carousel} ${className}`.trim()}>
 			<div className={style['carousel-inner']}>
@@ -46,12 +39,8 @@ export default function ImageCarousel({
 					{...props}
 					className={style['carousel-img']}
 					src={src}
-					oldSrc={oldSrc}
 					alt={alt}
-					onLoad={() => {
-						removeCachedImg(index)
-						moveNext()
-					}}
+					onLoad={moveNext}
 					onError={moveNext}
 					onStartPreview={onStartPreview}
 					onEndPreview={onEndPreview}
