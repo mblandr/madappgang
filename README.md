@@ -22,7 +22,7 @@ The application uses Firebase to register and authorize users. For proper work i
 * REACT_APP_STORAGE_BUCKET
 * REACT_APP_MESSAGING_SENDER_ID
 * REACT_APP_APP_ID
-* 
+
 The variables correspond to the object key values in the function initializeApp of the Firebase project (in the Firebase console Project Settings -> General-> SDK setup and configuration).
 
 The domain of the published site must be in the list of authorized Firebase domains (in the Firebase console Authentication -> Settings -z> Authorized domains console)
