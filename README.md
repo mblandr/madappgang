@@ -1,70 +1,28 @@
-# Getting Started with Create React App
+# Project Description
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The project is a solution to a  [React test task](https://doc.clickup.com/4717441/d/h/4fyw1-3382/4f9d716244343b5).
 
-## Available Scripts
+The project is implemented using create-react-app.
 
-In the project directory, you can run:
+## Deployment
 
-### `npm start`
+Implemented automatic deployment on Netlify using GitHub Actions.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+The repository address is [https://github.com/mblandr/madappgang](https://github.com/mblandr/madappgang).
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+The address of the finished application is [https://tiny-cactus-f13366.netlify.app/](https://tiny-cactus-f13366.netlify.app)
 
-### `npm test`
+Publishing happens automatically when you send a commit to a remote repository (using git push origin master), all application tests are run in the process.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Publish setting
 
-### `npm run build`
+The application uses Firebase to register and authorize users. For proper work is important the creation of environment variables in the site settings on Netlify (Site Settings -> Build and Deploy -> Environment). List of variables:
+* REACT_APP_API_KEY, REACT_APP_AUTH_DOMAIN
+* REACT_APP_PROJECT_ID
+* REACT_APP_STORAGE_BUCKET
+* REACT_APP_MESSAGING_SENDER_ID
+* REACT_APP_APP_ID
+* 
+The variables correspond to the object key values in the function initializeApp of the Firebase project (in the Firebase console Project Settings -> General-> SDK setup and configuration).
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+The domain of the published site must be in the list of authorized Firebase domains (in the Firebase console Authentication -> Settings -z> Authorized domains console)
