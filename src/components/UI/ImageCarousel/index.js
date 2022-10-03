@@ -1,6 +1,8 @@
-import style from './index.module.sass'
 import Image from '../Image'
-import { useState, useEffect, useRef } from 'react'
+
+import { useState, useRef } from 'react'
+
+import style from './index.module.sass'
 
 export default function ImageCarousel({
 	className = '',

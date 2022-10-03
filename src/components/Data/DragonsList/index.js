@@ -5,20 +5,15 @@ import {
 	refreshActions,
 } from '../../../data/store'
 import { getDragonsFromServer, getDragonFromServer } from '../../../data/server'
-import {
-	clearDragons,
-	loadDragon,
-	saveDragon,
-} from '../../../data/localStorage'
-import { setFavorites, getUser } from '../../../data/firebase'
+import { loadDragon, saveDragon } from '../../../data/localStorage'
+import { setFavorites } from '../../../data/firebase'
+
 import Image from '../../UI/Image'
 import Favorite from '../../UI/Favorite'
 
 import { useEffect, useState, useRef, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { dragonActions } from '../../../data/store'
 import { Link } from 'react-router-dom'
-import axios from 'axios'
 import { toast } from 'react-hot-toast'
 
 import style from './index.module.sass'
@@ -95,44 +90,7 @@ export default function DragonsList() {
 				}),
 			[dragons, favorites]
 		)
-	//const renderedDragons = dragons.map(
-	//	({ id, name, imgUrls, description, wikiUrl }) => {
-	//					const isFavorite = favorites.some(({ id: curId }) => curId === id)
-	//		return (
-	//			<article key={id} className={style.article}>
-	//				{user && (
-	//					<Favorite
-	//						className={style.favorite}
-	//						isFavorite={isFavorite}
-	//						onChangeIsFavorite={() =>
-	//							handleChangeIsFavorite(id, name, isFavorite)
-	//						}
-	//					/>
-	//				)}
-	//				<h2>{name}</h2>
-	//				<p>{description}</p>
-	//				<a href={wikiUrl} target='_blank' rel='noreferrer'>
-	//					On wikipedia
-	//				</a>
-	//				<Link to={`/${id}`} className={style.more}>
-	//					More info
-	//				</Link>
-	//				<div className={style.images}>
-	//					{imgUrls.map((imgUrl, index) => (
-	//						<div key={imgUrl} className={style['img-wrapper']}>
-	//							<div className={style['img-inner']}>
-	//								<Image src={imgUrl} className={style.img} />
-	//							</div>
-	//						</div>
-	//					))}
-	//				</div>
-	//			</article>
-	//		)
-	//	}
-	//)
-	useEffect(() => {
-		if (user) setFavorites(favorites)
-	}, [dragons])
+
 	useEffect(() => {
 		if (user) setFavorites(favorites)
 	}, [user])
@@ -189,7 +147,6 @@ export default function DragonsList() {
 							dispatch(dragonsCacheActions.add(dragon))
 
 							//теперь в списке драконов - он там последний
-							const tempDragon = Object.assign({}, dragon)
 							setDragons(dragons => (dragons.push(), [...dragons, dragon]))
 							//обновим смещение
 							setOffset(old => old + 1)

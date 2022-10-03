@@ -3,23 +3,19 @@ import {
 	dragonsCacheActions,
 	refreshActions,
 } from '../../../data/store'
-import Favorite from '../../UI/Favorite'
 import { getDragonFromServer } from '../../../data/server'
-import {
-	clearDragons,
-	loadDragon,
-	saveDragon,
-} from '../../../data/localStorage'
-import ImageCarousel from '../../UI/ImageCarousel'
+import { loadDragon, saveDragon } from '../../../data/localStorage'
 
+import Favorite from '../../UI/Favorite'
+import ImageCarousel from '../../UI/ImageCarousel'
+import Loader from '../../UI/Loader'
+
+import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import { useEffect, useState, createContext } from 'react'
-
-import style from './index.module.sass'
 import toast from 'react-hot-toast'
 
-export const CacheContext = createContext()
+import style from './index.module.sass'
 
 export default function Dragon() {
 	const { id: curId } = useParams(),
@@ -36,15 +32,6 @@ export default function Dragon() {
 			} else {
 				dispatch(userActions.addFavorite({ id, name }))
 			}
-		},
-		//заменяет исходный url картинки по ее загрузке с base64 строки на реальный url
-		removeCachedImg = imgUrl => {
-			const newDragon = { ...dragon },
-				current = newDragon.imgUrls.findIndex(
-					curImgUrl => curImgUrl.src === imgUrl
-				)
-			if (current >= 0) newDragon.imgUrls[current].oldSrc = ''
-			setDragon(newDragon)
 		}
 
 	useEffect(() => {
@@ -126,29 +113,32 @@ export default function Dragon() {
 			})),
 			isFavorite = favorites.some(({ id: curId }) => curId === id)
 		return (
-			<article className={style.article}>
-				{user && (
-					<Favorite
-						className={style.favorite}
-						isFavorite={isFavorite}
-						onChangeIsFavorite={() =>
-							handleChangeIsFavorite(id, name, isFavorite)
-						}
-					/>
-				)}
-				<h2>{name}</h2>
-				<p>{description}</p>
-				<h3>Характеристики</h3>
-				<ul>
-					<li>Масса: {mass} кг</li>
-					<li>Выста: {height} м</li>
-					<li>Дата выпуска: {new Date(year).toLocaleDateString()}</li>
-				</ul>
-				<a href={wikiUrl} target='_blank'>
-					On wikipedia
-				</a>				
-					<ImageCarousel className={style.carousel} items={items} />				
-			</article>
+			<>
+				{isLoading && <Loader />}
+				<article className={style.article}>
+					{user && (
+						<Favorite
+							className={style.favorite}
+							isFavorite={isFavorite}
+							onChangeIsFavorite={() =>
+								handleChangeIsFavorite(id, name, isFavorite)
+							}
+						/>
+					)}
+					<h2>{name}</h2>
+					<p>{description}</p>
+					<h3>Характеристики</h3>
+					<ul>
+						<li>Масса: {mass} кг</li>
+						<li>Выста: {height} м</li>
+						<li>Дата выпуска: {new Date(year).toLocaleDateString()}</li>
+					</ul>
+					<a href={wikiUrl} target='_blank' rel='noreferrer'>
+						On wikipedia
+					</a>
+					<ImageCarousel className={style.carousel} items={items} />
+				</article>
+			</>
 		)
 	}
 }

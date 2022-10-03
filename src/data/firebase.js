@@ -1,7 +1,20 @@
 import { initializeApp } from 'firebase/app'
-import { getAuth, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, EmailAuthProvider, sendEmailVerification, reauthenticateWithCredential, reauthenticateWithPopup, updateProfile, updatePassword, updateEmail, sendPasswordResetEmail } from 'firebase/auth'
+import {
+	getAuth,
+	signInWithPopup,
+	createUserWithEmailAndPassword,
+	signInWithEmailAndPassword,
+	GoogleAuthProvider,
+	EmailAuthProvider,
+	sendEmailVerification,
+	reauthenticateWithCredential,
+	reauthenticateWithPopup,
+	updateProfile,
+	updatePassword,
+	updateEmail,
+	sendPasswordResetEmail,
+} from 'firebase/auth'
 import { doc, getDoc, setDoc, getFirestore } from 'firebase/firestore'
-
 
 initializeApp({
 	apiKey: process.env.REACT_APP_API_KEY,
@@ -9,15 +22,16 @@ initializeApp({
 	projectId: process.env.REACT_APP_PROJECT_ID,
 	storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
 	messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
-	appId: process.env.REACT_APP_APP_ID
+	appId: process.env.REACT_APP_APP_ID,
 })
+
 export const auth = getAuth(),
-	googleProvider = new GoogleAuthProvider,
+	googleProvider = new GoogleAuthProvider(),
 	db = getFirestore()
 
 auth.useDeviceLanguage()
 googleProvider.setCustomParameters({
-	prompt: 'select_account'
+	prompt: 'select_account',
 })
 
 const humanErrorText = e => {
@@ -34,16 +48,13 @@ const humanErrorText = e => {
 		'auth/requires-recent-login': 'Необходим недавний вход в систему',
 		'auth/internal-error': 'Внутренняя ошибка',
 		'auth/invalid-credential': 'Неверные данные для входа',
-		"auth/invalid-verification-code": 'Неверный код подтверждения',
-		"auth/invalid-verification-id": 'Неверный идентификатор подтверждения'
-
+		'auth/invalid-verification-code': 'Неверный код подтверждения',
+		'auth/invalid-verification-id': 'Неверный идентификатор подтверждения',
 	}
-	if (e.code)
-		return errText[e.code] || e.code
-	else
-		return e.message
-
+	if (e.code) return errText[e.code] || e.code
+	else return e.message
 }
+
 export const signInGoogle = async () => {
 	try {
 		const { user } = await signInWithPopup(auth, googleProvider),
@@ -56,18 +67,17 @@ export const signInGoogle = async () => {
 			userData = {
 				displayName,
 				email,
-				favorites: []
-
+				favorites: [],
 			}
 			await setDoc(ref, userData)
 		}
 		userData.emailVerified = user.emailVerified
 		return userData
-	}
-	catch (e) {
+	} catch (e) {
 		throw Error(humanErrorText(e))
 	}
 }
+
 export const signIn = async (email, password) => {
 	try {
 		const { user } = await signInWithEmailAndPassword(auth, email, password),
@@ -76,8 +86,7 @@ export const signIn = async (email, password) => {
 		userData.emailVerified = user.emailVerified
 		userData.id = user.uid
 		return userData
-	}
-	catch (e) {
+	} catch (e) {
 		throw Error(humanErrorText(e))
 	}
 }
@@ -87,19 +96,16 @@ export const signUp = async (email, password, displayName) => {
 		const { user } = await createUserWithEmailAndPassword(auth, email, password)
 		const ref = doc(db, 'users', user.uid),
 			userDoc = await getDoc(ref)
-		if (userDoc.exists())
-			throw Error('E-mail уже занят')
+		if (userDoc.exists()) throw Error('E-mail уже занят')
 		const userData = {
 			displayName,
 			email,
-			favorites: []
-
+			favorites: [],
 		}
 		await setDoc(ref, userData)
 		userData.emailVerified = false
 		return userData
-	}
-	catch (e) {
+	} catch (e) {
 		throw Error(humanErrorText(e))
 	}
 }
@@ -107,8 +113,7 @@ export const signUp = async (email, password, displayName) => {
 export const sendLetter = async () => {
 	try {
 		await sendEmailVerification(auth.currentUser)
-	}
-	catch (e) {
+	} catch (e) {
 		throw Error(humanErrorText(e))
 	}
 }
@@ -117,7 +122,6 @@ export const refreshData = async () => {
 	const user = auth.currentUser
 	if (user) user.reload()
 	return user
-
 }
 
 export const setFavorites = async arr => {
@@ -126,63 +130,58 @@ export const setFavorites = async arr => {
 		try {
 			const userRef = doc(db, 'users', user.uid)
 			const userDoc = await getDoc(userRef)
-			if (!userDoc.exists())
-				throw Error('Пользователь не существует')
+			if (!userDoc.exists()) throw Error('Пользователь не существует')
 			const userData = userDoc.data()
 			userData.favorites = arr
 
 			await setDoc(userRef, userData)
-		}
-		catch (e) {
+		} catch (e) {
 			throw Error(humanErrorText(e))
 		}
 	}
 }
-
 
 export const getUser = async id => {
 	if (id) {
 		try {
 			const userRef = doc(db, 'users', id)
 			const userDoc = await getDoc(userRef)
-			if (!userDoc.exists())
-				return
+			if (!userDoc.exists()) return
 			return userDoc.data()
-		}
-		catch (e) {
+		} catch (e) {
 			throw Error(humanErrorText(e))
 		}
 	}
 }
 
-const reAuth = async (password) => {
+const reAuth = async password => {
 	const user = auth.currentUser,
 		provider = user.providerData[0].providerId
 	try {
 		if (provider === 'password') {
-			const credential = EmailAuthProvider.credential(
-				user.email,
-				password
-			)
+			const credential = EmailAuthProvider.credential(user.email, password)
 			await reauthenticateWithCredential(user, credential)
-		}
-		else
-			await reauthenticateWithPopup(googleProvider)
-
+		} else await reauthenticateWithPopup(googleProvider)
 	} catch (e) {
 		throw Error(humanErrorText(e))
 	}
 }
 
-export const updateInfo = async ({ displayName, oldDisplayName, email, oldEmail, password, oldPassword }) => {
+export const updateInfo = async ({
+	displayName,
+	oldDisplayName,
+	email,
+	oldEmail,
+	password,
+	oldPassword,
+}) => {
 	let user = auth.currentUser
 	await reAuth(oldPassword)
 	try {
 		if (displayName !== oldDisplayName) {
 			const userRef = doc(db, 'users', user.uid)
 			const userDoc = await getDoc(userRef)
-			if (!userDoc.exists())
-				throw Error('Пользователь не существует')
+			if (!userDoc.exists()) throw Error('Пользователь не существует')
 			const userData = userDoc.data()
 			userData.displayName = displayName
 			await setDoc(userRef, userData)
@@ -192,8 +191,7 @@ export const updateInfo = async ({ displayName, oldDisplayName, email, oldEmail,
 			await updateEmail(user, email)
 			const userRef = doc(db, 'users', user.uid)
 			const userDoc = await getDoc(userRef)
-			if (!userDoc.exists())
-				throw Error('Пользователь не существует')
+			if (!userDoc.exists()) throw Error('Пользователь не существует')
 			const userData = userDoc.data()
 			userData.email = email
 			await setDoc(userRef, userData)
@@ -202,15 +200,12 @@ export const updateInfo = async ({ displayName, oldDisplayName, email, oldEmail,
 
 		if (password !== oldPassword && password.trim())
 			await updatePassword(user, password)
-
-	}
-	catch (e) {
+	} catch (e) {
 		throw Error(humanErrorText(e))
 	}
 }
 
 export const sendResetPasswordLetter = async email => {
-
 	try {
 		await sendPasswordResetEmail(auth, email)
 	} catch (e) {

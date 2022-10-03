@@ -1,15 +1,13 @@
-import { ReactComponent as NoImg } from './no-img.svg'
+import { loadImageData, saveImageData } from '../../../data/localStorage'
+import { cachedImagesActions } from '../../../data/store'
+
 import Loader from '../Loader'
-import style from './index.module.sass'
 
 import { useState, useEffect, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { cachedImagesActions } from '../../../data/store'
-import {
-	clearDragons,
-	loadImageData,
-	saveImageData,
-} from '../../../data/localStorage'
+
+import { ReactComponent as NoImg } from './no-img.svg'
+import style from './index.module.sass'
 
 export default function Image({
 	alt = '',
@@ -68,7 +66,7 @@ export default function Image({
 			img.src = src
 		}
 	}, [inCache, src])
-	
+
 	if (error) return <NoImg className={`${style.img} ${className}`.trim()} />
 	return (
 		<>
@@ -80,7 +78,7 @@ export default function Image({
 					className={`${style.full} ${isHiding ? style.hide : ''}`.trim()}
 					onClick={hideFullImage}
 				>
-					<img src={inCache ? src : innerSrc} />
+					<img src={inCache ? src : innerSrc} alt={alt} />
 				</div>
 			)}
 			{inCache ? (

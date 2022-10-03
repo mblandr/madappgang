@@ -1,15 +1,22 @@
-import style from './index.module.sass'
-
-import TextInput from '../../UI/TextInput'
-import { signIn, signInGoogle, signUp, sendLetter, refreshData, reAuth } from '../../../data/firebase'
+import {
+	signIn,
+	signInGoogle,
+	signUp,
+	sendLetter,
+	refreshData,
+} from '../../../data/firebase'
 import { userActions } from '../../../data/store'
 import { setCookie } from '../../../data/cookie'
 
-import toast from 'react-hot-toast'
-import { useNavigate, Link } from 'react-router-dom'
+import TextInput from '../../UI/TextInput'
+import Button from '../../UI/Button'
+
 import { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import Button from '../../UI/Button'
+import { useNavigate, Link } from 'react-router-dom'
+import toast from 'react-hot-toast'
+
+import style from './index.module.sass'
 
 export default function LoginRegister() {
 	const dispatch = useDispatch(),
@@ -20,10 +27,9 @@ export default function LoginRegister() {
 			password: '',
 			confirmPassword: '',
 			newUser: false,
-			saveUser: false
+			saveUser: false,
 		}),
-
-		handleSignInGoogle = async e => {
+		handleSignInGoogle = async () => {
 			try {
 				const userData = await signInGoogle()
 				toast('Вход выполнен')
@@ -35,9 +41,7 @@ export default function LoginRegister() {
 					})
 				)
 				return navigate('/')
-
-			}
-			catch (e) {
+			} catch (e) {
 				toast.error(e.message)
 			}
 		},
@@ -55,8 +59,7 @@ export default function LoginRegister() {
 						toast.error('Email не подтвержден')
 						await sendLetter()
 						toast('Подтверждающее письмо отправлено на email')
-					}
-					else {
+					} else {
 						dispatch(
 							userActions.login({
 								displayName: userData.displayName,
@@ -68,42 +71,34 @@ export default function LoginRegister() {
 							setCookie('user', userData.id, { 'max-age': 3600 * 24 * 30 })
 						return navigate('/')
 					}
-				}
-				else if (id === 'signUp') {
+				} else if (id === 'signUp') {
 					await signUp(formData.email, formData.password, formData.displayName)
 					toast('Регистрация завершена')
 					await sendLetter()
 					toast('Подтверждающее письмо отправлено на email')
 					setFormData({
 						...formData,
-						newUser: false
+						newUser: false,
 					})
 				}
-
-			}
-			catch (e) {
+			} catch (e) {
 				toast.error(e.message)
 			}
 		},
-
 		handleFormChange = e => {
 			if (e.target.name === 'newUser')
 				setFormData({
 					...formData,
-					newUser: e.target.checked
+					newUser: e.target.checked,
 				})
 			else
 				setFormData({
 					...formData,
-					[e.target.name]: e.target.value
+					[e.target.name]: e.target.value,
 				})
-
 		}
 	return (
-		<form
-			className={style.form}
-			onSubmit={handleSubmitForm}
-		>
+		<form className={style.form} onSubmit={handleSubmitForm}>
 			<label>
 				<input
 					name='newUser'
@@ -124,9 +119,7 @@ export default function LoginRegister() {
 				onChange={handleFormChange}
 			/>
 
-			{
-				formData.newUser
-				&&
+			{formData.newUser && (
 				<TextInput
 					name='displayName'
 					className='input'
@@ -134,34 +127,34 @@ export default function LoginRegister() {
 					label='Имя'
 					onChange={handleFormChange}
 				/>
-			}
+			)}
 
 			<TextInput
 				name='password'
 				className='input'
 				type='password'
 				required
-				invalid={formData.newUser && formData.password !== formData.confirmPassword}
+				invalid={
+					formData.newUser && formData.password !== formData.confirmPassword
+				}
 				label='Пароль'
 				onChange={handleFormChange}
 			/>
 
-			{
-				formData.newUser
-				&&
-				< TextInput
+			{formData.newUser && (
+				<TextInput
 					name='confirmPassword'
 					className='input'
 					type='password'
 					required
-					invalid={formData.newUser && (formData.password !== formData.confirmPassword)}
+					invalid={
+						formData.newUser && formData.password !== formData.confirmPassword
+					}
 					label='Повторите пароль'
 					onChange={handleFormChange}
 				/>
-			}
-			{
-				!formData.newUser
-				&&
+			)}
+			{!formData.newUser && (
 				<div className={style.boxes}>
 					<label>
 						<input
@@ -175,37 +168,27 @@ export default function LoginRegister() {
 					</label>
 					<Link to='/resetPwd'>Забыли пароль?</Link>
 				</div>
-			}
+			)}
 			<div className={style.btns}>
-				{
-					formData.newUser
-						?
-
-						<Button
-							className={style.button}
-							id='signUp'
-						>
-							Регистрация
+				{formData.newUser ? (
+					<Button className={style.button} id='signUp'>
+						Регистрация
+					</Button>
+				) : (
+					<>
+						<Button id='signIn' className={style.button}>
+							Вход
 						</Button>
-						:
-						<>
-							<Button
-								id='signIn'
-								className={style.button}
-							>
-								Вход
-							</Button>
-							<Button
-								className={style['button-alt']}
-								google
-								type="button"
-								onClick={handleSignInGoogle}
-							>
-								
-								Вход с Google
-							</Button>
-						</>
-				}
+						<Button
+							className={style['button-alt']}
+							google
+							type='button'
+							onClick={handleSignInGoogle}
+						>
+							Вход с Google
+						</Button>
+					</>
+				)}
 			</div>
 		</form>
 	)

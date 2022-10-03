@@ -1,5 +1,4 @@
 import { createSlice, configureStore } from '@reduxjs/toolkit'
-import { ActionCodeOperation, updateCurrentUser } from 'firebase/auth'
 
 const refreshSlice = createSlice({
 	name: 'refeshing state',
@@ -38,7 +37,6 @@ const dragonsCacheSlice = createSlice({
 			const index = state.list.findIndex(({ id }) => id === action.payload.id)
 
 			if (index >= 0) {
-				//debugger
 				Object.keys(action.payload.data).forEach(
 					key => (state.list[index][key] = action.payload.data[key])
 				)
@@ -101,6 +99,7 @@ const userSlice = createSlice({
 		},
 	},
 })
+
 export const dragonsCacheActions = dragonsCacheSlice.actions
 export const userActions = userSlice.actions
 export const idsActions = idsSlice.actions
@@ -116,4 +115,5 @@ const store = configureStore({
 		imagesCache: cachedImagesSlice.reducer,
 	},
 })
+
 export default store

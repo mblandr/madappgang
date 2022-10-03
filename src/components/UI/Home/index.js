@@ -1,4 +1,3 @@
-import style from './index.module.sass'
 import DragonsList from '../../Data/DragonsList'
 import Dragon from '../../Data/Dragon'
 
