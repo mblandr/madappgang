@@ -25,4 +25,4 @@ The application uses Firebase to register and authorize users. For proper work i
 
 The variables correspond to the object key values in the function initializeApp of the Firebase project (in the Firebase console Project Settings -> General-> SDK setup and configuration).
 
-The domain of the published site must be in the list of authorized Firebase domains (in the Firebase console Authentication -> Settings -z> Authorized domains console)
+The domain of the published site must be in the list of authorized Firebase domains (in the Firebase console Authentication -> Settings -> Authorized domains console)
