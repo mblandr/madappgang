@@ -22,9 +22,8 @@ export default function ImageCarousel({
 		},
 		moveNext = () =>
 			setTimeout(() => {
-				console.log('timeout called')
 				if (!isPreviewStartedRef.current) setIndex(getNextIndex(index))
-			}, 3000)
+			}, 2000)
 
 	if (items.length === 0) return <p>No items in carousel</p>
 

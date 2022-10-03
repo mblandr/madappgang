@@ -2,7 +2,7 @@ import { ReactComponent as NoImg } from './no-img.svg'
 import Loader from '../Loader'
 import style from './index.module.sass'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { cachedImagesActions } from '../../../data/store'
 import {
@@ -22,12 +22,13 @@ export default function Image({
 	...props
 }) {
 	const dispatch = useDispatch(),
-		[isLoading, setIsLoading] = useState(true),
 		[innerSrc, setInnerSrc] = useState(''),
 		[error, setError] = useState(false),
 		[isPreview, setIsPreview] = useState(false),
 		[isHiding, setIsHiding] = useState(false),
 		cachedImages = useSelector(state => state.imagesCache.list),
+		inCache = useMemo(() => cachedImages.includes(src), [src, cachedImages]),
+		[isLoading, setIsLoading] = useState(!inCache),
 		showFullImage = e => {
 			e.stopPropagation()
 			setIsHiding(false)
@@ -43,51 +44,31 @@ export default function Image({
 				onEndPreview && onEndPreview()
 			}, 850)
 		}
-
 	useEffect(() => {
-		console.log(
-			'user errct',
-			'влюченв кэш=',
-			cachedImages.includes(src),
-			'src=',
-			src.substring(0, 50),
-			'cached images=',
-			cachedImages
-		)
-		if (cachedImages.includes(src)) {
-			setInnerSrc(src)
-			setIsLoading(false)
-			onLoad && onLoad()
-			return
-		}
-		setInnerSrc(loadImageData(src))
-
-		const img = document.createElement('img')
-		img.addEventListener('error', () => {
-			setError(true)
-			setIsLoading(false)
-			onError && onError()
-		})
-		img.addEventListener('load', () => {
-			console.log('oon image loading')
+		if (inCache) onLoad && onLoad()
+		else {
+			setIsLoading(true)
 			setError(false)
-			setIsLoading(false)
-			setInnerSrc(src)
-			dispatch(cachedImagesActions.add(src))
-			saveImageData(img.src)
-			onLoad && onLoad()
-		})
-		img.src = src
-	}, [src])
-	console.log(
-		'rendered image',
-		'isloading=',
-		isLoading,
-		'src=',
-		src,
-		'innerSrc',
-		innerSrc.substring(0, 50)
-	)
+			setInnerSrc(loadImageData(src))
+
+			const img = document.createElement('img')
+			img.addEventListener('error', () => {
+				setError(true)
+				setIsLoading(false)
+				onError && onError()
+			})
+			img.addEventListener('load', () => {
+				setError(false)
+				setIsLoading(false)
+				setInnerSrc(src)
+				dispatch(cachedImagesActions.add(src))
+				saveImageData(img.src)
+				onLoad && onLoad()
+			})
+			img.src = src
+		}
+	}, [inCache, src])
+	
 	if (error) return <NoImg className={`${style.img} ${className}`.trim()} />
 	return (
 		<>
@@ -99,10 +80,18 @@ export default function Image({
 					className={`${style.full} ${isHiding ? style.hide : ''}`.trim()}
 					onClick={hideFullImage}
 				>
-					<img src={innerSrc} />
+					<img src={inCache ? src : innerSrc} />
 				</div>
 			)}
-			{innerSrc && (
+			{inCache ? (
+				<img
+					{...props}
+					className={`${style.img} ${className}`.trim()}
+					src={src}
+					alt={alt}
+					onClick={showFullImage}
+				/>
+			) : innerSrc ? (
 				<img
 					{...props}
 					className={`${style.img} ${className}`.trim()}
@@ -110,6 +99,8 @@ export default function Image({
 					alt={alt}
 					onClick={showFullImage}
 				/>
+			) : (
+				<NoImg className={`${style.img} ${className}`.trim()} />
 			)}
 		</>
 	)

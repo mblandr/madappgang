@@ -23,12 +23,12 @@ export const clearDragon = id => localStorage.removeItem(`dragon:${id}`)
 export const loadImageData = url => localStorage.getItem(`image:${url}`)
 
 export const saveImageData = url => {
-	console.log('saved images data')
 	const oldDate = loadImageDate(url)
 	return new Promise((resolve, reject) => {
 		fetch(url)
 			.then(res => {
-				const date = res.headers.get('last-modified')
+				let date = res.headers.get('last-modified')
+				if (date) date = new Date(date).getTime()
 				if (date && oldDate && date <= oldDate) throw Error('Too old')
 				return res.blob().then(blob => ({
 					date,
@@ -55,5 +55,5 @@ export const saveImageData = url => {
 const loadImageDate = url => {
 	const data = localStorage.getItem(`date:${url}`)
 	if (!data) return false
-	return new Date(+data * 1000)
+	return +data * 1000
 }

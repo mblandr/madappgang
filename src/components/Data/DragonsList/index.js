@@ -61,7 +61,6 @@ export default function DragonsList() {
 		renderedDragons = useMemo(
 			() =>
 				dragons.map(({ id, name, imgUrls, description, wikiUrl }) => {
-					console.log('rendered dragons', imgUrls)
 					const isFavorite = favorites.some(({ id: curId }) => curId === id)
 					return (
 						<article key={id} className={style.article}>
@@ -83,22 +82,54 @@ export default function DragonsList() {
 								More info
 							</Link>
 							<div className={style.images}>
-								{imgUrls.map(
-									(imgUrl, index) =>
-										index === 0 && (
-											<div key={imgUrl} className={style['img-wrapper']}>
-												<div className={style['img-inner']}>
-													<Image src={imgUrl} className={style.img} />
-												</div>
-											</div>
-										)
-								)}
+								{imgUrls.map(imgUrl => (
+									<div key={imgUrl} className={style['img-wrapper']}>
+										<div className={style['img-inner']}>
+											<Image src={imgUrl} className={style.img} />
+										</div>
+									</div>
+								))}
 							</div>
 						</article>
 					)
 				}),
-			[dragons]
+			[dragons, favorites]
 		)
+	//const renderedDragons = dragons.map(
+	//	({ id, name, imgUrls, description, wikiUrl }) => {
+	//					const isFavorite = favorites.some(({ id: curId }) => curId === id)
+	//		return (
+	//			<article key={id} className={style.article}>
+	//				{user && (
+	//					<Favorite
+	//						className={style.favorite}
+	//						isFavorite={isFavorite}
+	//						onChangeIsFavorite={() =>
+	//							handleChangeIsFavorite(id, name, isFavorite)
+	//						}
+	//					/>
+	//				)}
+	//				<h2>{name}</h2>
+	//				<p>{description}</p>
+	//				<a href={wikiUrl} target='_blank' rel='noreferrer'>
+	//					On wikipedia
+	//				</a>
+	//				<Link to={`/${id}`} className={style.more}>
+	//					More info
+	//				</Link>
+	//				<div className={style.images}>
+	//					{imgUrls.map((imgUrl, index) => (
+	//						<div key={imgUrl} className={style['img-wrapper']}>
+	//							<div className={style['img-inner']}>
+	//								<Image src={imgUrl} className={style.img} />
+	//							</div>
+	//						</div>
+	//					))}
+	//				</div>
+	//			</article>
+	//		)
+	//	}
+	//)
 	useEffect(() => {
 		if (user) setFavorites(favorites)
 	}, [dragons])
